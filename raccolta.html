@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Dettaglio Raccolta</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body class="bg-slate-950 text-white p-6">
+    <div class="max-w-6xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
+            <a href="index.html" class="text-sky-500 font-bold text-xs uppercase tracking-widest border border-sky-500/30 px-4 py-2 rounded-full hover:bg-sky-500/10 transition">← Home</a>
+            <h1 id="titolo-serie" class="text-3xl font-black uppercase italic tracking-tighter text-center">...</h1>
+            <div class="w-24"></div> </header>
+        
+        <div id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+    </div>
+
+    <script>
+        // CONFIGURAZIONE LINK CSV (Sostituisci IL_TUO_LINK con i link reali di Google Sheets)
+        const links = {
+            'dyd': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=0&single=true&output=csv',
+            'dyd-rist': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1422213309&single=true&output=csv',
+            'dyd-book': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=530551093&single=true&output=csv',
+            'dyd-super': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=319434338&single=true&output=csv',
+            'dyd-gig': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1112494760&single=true&output=csv',
+            'diab': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=2012731827&single=true&output=csv',
+            'diab-rist': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv',
+            'diab-ann': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv',
+            'brendon': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv',
+            'simpsons': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv'
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const serieId = params.get('serie');
+        const nomiEstesi = {
+            'dyd': 'Dylan Dog', 'dyd-rist': 'Dylan Dog Ristampa', 'dyd-book': 'Dylan Dog Collezione Book',
+            'dyd-super': 'Dylan Dog Super Book', 'dyd-gig': 'Dylan Dog Albo Gigante', 'diab': 'Diabolik',
+            'diab-rist': 'Diabolik Ristampe', 'diab-ann': 'Diabolik Annate', 'brendon': 'Brendon', 'simpsons': 'Simpsons Panini Comics'
+        };
+
+        if (links[serieId]) {
+            document.getElementById('titolo-serie').innerText = nomiEstesi[serieId];
+            
+            Papa.parse(links[serieId], {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const mine = results.data.filter(i => i.POSSEDUTO && i.POSSEDUTO.toLowerCase() === 'si');
+                    render(mine);
+                }
+            });
+        }
+
+        function render(data) {
+            const grid = document.getElementById('grid');
+            if (data.length === 0) {
+                grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-20 font-mono uppercase text-xs">Nessun albo presente in questa raccolta.</p>';
+                return;
+            }
+            grid.innerHTML = data.map(i => `
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
+                    <img src="${i.IMG || 'https://via.placeholder.com/300x450?text=Copertina'}" class="w-full h-64 object-cover border-b border-slate-800">
+                    <div class="p-4 flex-grow">
+                        <h3 class="font-bold text-sm uppercase leading-tight">#${i.NUMERO} - ${i.TITOLO}</h3>
+                        <p class="text-[10px] text-slate-500 mt-2 font-bold">${i.CONDIZIONE || 'CONDIZIONE N.D.'}</p>
+                    </div>
+                    <div class="p-4 pt-0 mt-auto">
+                        <div class="text-green-500 font-black text-lg">${i.PREZZO > 0 ? '€'+i.PREZZO : ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
