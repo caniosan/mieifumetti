@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2113.65">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+    span.s1 {font: 12.0px 'Apple Color Emoji'}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="it"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;Comic Archive | My Collection&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.comic-card { transition: transform 0.2s; border: 1px solid #334155; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body class="p-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;header class="max-w-6xl mx-auto mb-10 text-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;h1 class="text-4xl font-bold tracking-tight text-white mb-2"&gt;ARCHIVIO FUMETTI&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;p class="text-slate-400"&gt;Gestione collezione e vendita&lt;/p&gt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;nav class="mt-8 flex flex-wrap justify-center gap-2" id="categories"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/nav&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/header&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;main class="max-w-6xl mx-auto"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="comic-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/main&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const categories = ["Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", "Brendon", "Simpsons"];</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Mock data - Qui andrebbe il fetch dal tuo file JSON</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const comics = [</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ serie: "Dylan Dog", titolo: "L'alba dei morti viventi", anno: 1986, posseduto: true, condizione: "Ottima", inVendita: false, prezzo: 0, note: "Prima edizione", img: "https://via.placeholder.com/200x300" },</p>
+<p class="p1"><span class="Apple-converted-space">            </span>{ serie: "Diabolik", titolo: "Il Re del Terrore", anno: 1962, posseduto: true, condizione: "Uscita da edicola", inVendita: true, prezzo: 50, note: "Ristampa", img: "https://via.placeholder.com/200x300" }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function renderCategories() {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const nav = document.getElementById('categories');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>categories.forEach(cat =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const btn = document.createElement('button');</p>
+<p class="p1"><span class="Apple-converted-space">                </span>btn.className = "px-4 py-2 bg-slate-800 rounded-full text-sm hover:bg-sky-500 transition";</p>
+<p class="p1"><span class="Apple-converted-space">                </span>btn.innerText = cat;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>btn.onclick = () =&gt; filterComics(cat);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>nav.appendChild(btn);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function renderComics(data) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const grid = document.getElementById('comic-grid');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>grid.innerHTML = data.map(c =&gt; `</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;img src="${c.img}" alt="${c.titolo}" class="w-full h-64 object-cover"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="p-4"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;span class="text-xs font-bold uppercase text-sky-400"&gt;${c.serie}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;h3 class="text-lg font-bold mt-1"&gt;${c.titolo}&lt;/h3&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;p class="text-sm text-slate-400"&gt;${c.anno} - Condizione: ${c.condizione}&lt;/p&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;div class="mt-4 flex justify-between items-center"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>${c.inVendita ? `&lt;span class="bg-green-500 text-black text-xs font-bold px-2 py-1 rounded"&gt;€${c.prezzo}&lt;/span&gt;` : '&lt;span class="text-slate-500 text-xs text-italic"&gt;In collezione&lt;/span&gt;'}</p>
+<p class="p1"><span class="Apple-converted-space">                            </span>&lt;button class="text-slate-300 hover:text-white"&gt;<span class="s1">ℹ️</span> Info&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>`).join('');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>function filterComics(cat) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const filtered = comics.filter(c =&gt; c.serie === cat);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>renderComics(filtered);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>renderCategories();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>renderComics(comics);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
