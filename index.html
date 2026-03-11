@@ -35,78 +35,77 @@
     </main>
 
     <script>
-        const myCategories = [
-            "Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", 
-            "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", 
-            "Brendon", "Simpsons Panini"
-        ];
+    const myCategories = ["Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", "Brendon", "Simpsons Panini"];
+    let comics = []; // Inizialmente vuoto
 
-        // Esempio Database - Qui aggiungerai i tuoi pezzi forti
-        const comics = [
-            { serie: "Dylan Dog", n: 1, titolo: "L'alba dei morti viventi", anno: 1986, posseduto: true, condizione: "Edicola", inVendita: true, prezzo: 150, img: "https://www.sergiobonelli.it/resizer/-1/-1/true/1473413554443.jpg--.jpg", note: "Prima stampa originale" },
-            { serie: "Diabolik", n: 1, titolo: "Il Re del Terrore", anno: 1962, posseduto: true, condizione: "Ottima", inVendita: false, prezzo: 0, img: "https://www.diabolik.it/immagini/albi/1_b.jpg", note: "Pezzo centrale della collezione" },
-            { serie: "Brendon", n: 1, titolo: "Nato il 31 Febbraio", anno: 1998, posseduto: true, condizione: "Magazzino", inVendita: true, prezzo: 15, img: "https://www.sergiobonelli.it/resizer/-1/-1/true/1473415132561.jpg--.jpg", note: "" },
-            { serie: "Simpsons Panini", n: 1, titolo: "Simpsons Comics 1", anno: 2012, posseduto: true, condizione: "Buona", inVendita: true, prezzo: 8, img: "https://comics.panini.it/static/covers/front/S_SIMCO1_0.jpg", note: "Edizione Panini" }
-        ];
-
-        function init() {
-            const nav = document.getElementById('categories');
-            myCategories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.className = "filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700";
-                btn.innerText = cat;
-                btn.onclick = (e) => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    filterComics(cat);
-                };
-                nav.appendChild(btn);
-            });
+    async function loadData() {
+        try {
+            // Carica i dati dal file esterno
+            const response = await fetch('database.json');
+            comics = await response.json();
             renderComics(comics);
+        } catch (error) {
+            console.error("Errore nel caricamento del database:", error);
         }
+    }
 
-        function renderComics(data) {
-            const grid = document.getElementById('comic-grid');
-            grid.innerHTML = data.map(c => `
-                <div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg flex flex-col">
-                    <div class="relative">
-                        <img src="${c.img}" alt="${c.titolo}" class="w-full h-72 object-cover opacity-80">
-                        ${c.inVendita ? `<div class="absolute top-2 right-2 badge-sale text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase">In Vendita</div>` : ''}
-                    </div>
-                    <div class="p-4 flex-grow">
-                        <p class="text-[10px] font-bold uppercase text-sky-400 tracking-widest mb-1">${c.serie}</p>
-                        <h3 class="text-sm font-bold leading-tight mb-1 text-white uppercase">${c.n}. ${c.titolo}</h3>
-                        <p class="text-xs text-slate-500">${c.anno} • ${c.condizione}</p>
-                    </div>
-                    <div class="p-4 pt-0 border-t border-slate-800 mt-auto bg-slate-900/50">
-                        <div class="flex justify-between items-center mt-3">
-                            <span class="text-lg font-bold ${c.inVendita ? 'text-green-400' : 'text-slate-600'}">
-                                ${c.inVendita ? '€'+c.prezzo : 'NFS'}
-                            </span>
-                            <button class="text-[10px] bg-slate-800 hover:bg-sky-500 px-3 py-1 rounded transition">DETTAGLI</button>
-                        </div>
+    function init() {
+        const nav = document.getElementById('categories');
+        myCategories.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = "filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700";
+            btn.innerText = cat;
+            btn.onclick = (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                filterComics(cat);
+            };
+            nav.appendChild(btn);
+        });
+        loadData(); // Avvia il caricamento dal file esterno
+    }
+
+    function renderComics(data) {
+        const grid = document.getElementById('comic-grid');
+        grid.innerHTML = data.map(c => `
+            <div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg flex flex-col">
+                <div class="relative">
+                    <img src="${c.img}" alt="${c.titolo}" class="w-full h-72 object-cover opacity-90">
+                    ${c.inVendita ? `<div class="absolute top-2 right-2 bg-green-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg">IN VENDITA</div>` : ''}
+                </div>
+                <div class="p-4 flex-grow">
+                    <p class="text-[10px] font-bold uppercase text-sky-400 tracking-widest mb-1">${c.serie}</p>
+                    <h3 class="text-sm font-bold leading-tight mb-1 text-white uppercase">${c.n}. ${c.titolo}</h3>
+                    <p class="text-xs text-slate-500">${c.anno} • ${c.condizione}</p>
+                </div>
+                <div class="p-4 pt-0 border-t border-slate-800 mt-auto">
+                    <div class="flex justify-between items-center mt-3">
+                        <span class="text-lg font-bold ${c.inVendita ? 'text-green-400' : 'text-slate-600'}">
+                            ${c.inVendita ? '€' + c.prezzo : 'COLLEZIONE'}
+                        </span>
                     </div>
                 </div>
-            `).join('');
-        }
+            </div>
+        `).join('');
+    }
 
-        function filterComics(cat) {
-            if(cat === 'all') return renderComics(comics);
-            const filtered = comics.filter(c => c.serie === cat);
-            renderComics(filtered);
-        }
+    function filterComics(cat) {
+        if(cat === 'all') return renderComics(comics);
+        const filtered = comics.filter(c => c.serie === cat);
+        renderComics(filtered);
+    }
 
-        function searchComics() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = comics.filter(c => 
-                c.titolo.toLowerCase().includes(term) || 
-                c.serie.toLowerCase().includes(term) ||
-                c.n.toString() === term
-            );
-            renderComics(filtered);
-        }
+    function searchComics() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = comics.filter(c => 
+            c.titolo.toLowerCase().includes(term) || 
+            c.serie.toLowerCase().includes(term) ||
+            c.n.toString() === term
+        );
+        renderComics(filtered);
+    }
 
-        init();
-    </script>
+    init();
+</script>
 </body>
 </html>
