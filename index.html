@@ -3,60 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comic Archive | My Collection</title>
+    <title>Comic Manager | Caniosan</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .comic-card { transition: transform 0.2s; border: 1px solid #334155; }
-        .comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; }
+        .comic-card { transition: all 0.3s ease; border: 1px solid #1e293b; }
+        .comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; box-shadow: 0 10px 20px -10px rgba(56, 189, 248, 0.3); }
+        .filter-btn.active { background-color: #38bdf8; color: #0f172a; font-weight: bold; }
+        .badge-sale { background: linear-gradient(90deg, #22c55e, #16a34a); }
     </style>
 </head>
-<body class="p-6">
-    <header class="max-w-6xl mx-auto mb-10 text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-white mb-2">ARCHIVIO FUMETTI</h1>
-        <p class="text-slate-400">Gestione collezione e vendita</p>
+<body class="p-4 md:p-8">
+
+    <header class="max-w-7xl mx-auto mb-12 text-center">
+        <h1 class="text-5xl font-black tracking-tighter text-white mb-4">MY COMIC ARCHIVE</h1>
+        <p class="text-slate-400 max-w-2xl mx-auto">Gestione professionale collezioni e vendita online. Scansiona il QR per accedere al catalogo aggiornato.</p>
         
-        <nav class="mt-8 flex flex-wrap justify-center gap-2" id="categories">
+        <div class="mt-8 max-w-md mx-auto">
+            <input type="text" id="searchInput" onkeyup="searchComics()" placeholder="Cerca titolo o numero..." class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-sky-500 text-white">
+        </div>
+
+        <nav class="mt-8 flex flex-wrap justify-center gap-3" id="categories">
+            <button onclick="filterComics('all')" class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700 active">Tutti</button>
             </nav>
     </header>
 
-    <main class="max-w-6xl mx-auto">
-        <div id="comic-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <main class="max-w-7xl mx-auto">
+        <div id="comic-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             </div>
     </main>
 
     <script>
-        const categories = ["Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", "Brendon", "Simpsons"];
-        
-        // Mock data - Qui andrebbe il fetch dal tuo file JSON
-        const comics = [
-            { serie: "Dylan Dog", titolo: "L'alba dei morti viventi", anno: 1986, posseduto: true, condizione: "Ottima", inVendita: false, prezzo: 0, note: "Prima edizione", img: "https://via.placeholder.com/200x300" },
-            { serie: "Diabolik", titolo: "Il Re del Terrore", anno: 1962, posseduto: true, condizione: "Uscita da edicola", inVendita: true, prezzo: 50, note: "Ristampa", img: "https://via.placeholder.com/200x300" }
+        const myCategories = [
+            "Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", 
+            "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", 
+            "Brendon", "Simpsons Panini"
         ];
 
-        function renderCategories() {
+        // Esempio Database - Qui aggiungerai i tuoi pezzi forti
+        const comics = [
+            { serie: "Dylan Dog", n: 1, titolo: "L'alba dei morti viventi", anno: 1986, posseduto: true, condizione: "Edicola", inVendita: true, prezzo: 150, img: "https://www.sergiobonelli.it/resizer/-1/-1/true/1473413554443.jpg--.jpg", note: "Prima stampa originale" },
+            { serie: "Diabolik", n: 1, titolo: "Il Re del Terrore", anno: 1962, posseduto: true, condizione: "Ottima", inVendita: false, prezzo: 0, img: "https://www.diabolik.it/immagini/albi/1_b.jpg", note: "Pezzo centrale della collezione" },
+            { serie: "Brendon", n: 1, titolo: "Nato il 31 Febbraio", anno: 1998, posseduto: true, condizione: "Magazzino", inVendita: true, prezzo: 15, img: "https://www.sergiobonelli.it/resizer/-1/-1/true/1473415132561.jpg--.jpg", note: "" },
+            { serie: "Simpsons Panini", n: 1, titolo: "Simpsons Comics 1", anno: 2012, posseduto: true, condizione: "Buona", inVendita: true, prezzo: 8, img: "https://comics.panini.it/static/covers/front/S_SIMCO1_0.jpg", note: "Edizione Panini" }
+        ];
+
+        function init() {
             const nav = document.getElementById('categories');
-            categories.forEach(cat => {
+            myCategories.forEach(cat => {
                 const btn = document.createElement('button');
-                btn.className = "px-4 py-2 bg-slate-800 rounded-full text-sm hover:bg-sky-500 transition";
+                btn.className = "filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700";
                 btn.innerText = cat;
-                btn.onclick = () => filterComics(cat);
+                btn.onclick = (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterComics(cat);
+                };
                 nav.appendChild(btn);
             });
+            renderComics(comics);
         }
 
         function renderComics(data) {
             const grid = document.getElementById('comic-grid');
             grid.innerHTML = data.map(c => `
-                <div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg">
-                    <img src="${c.img}" alt="${c.titolo}" class="w-full h-64 object-cover">
-                    <div class="p-4">
-                        <span class="text-xs font-bold uppercase text-sky-400">${c.serie}</span>
-                        <h3 class="text-lg font-bold mt-1">${c.titolo}</h3>
-                        <p class="text-sm text-slate-400">${c.anno} - Condizione: ${c.condizione}</p>
-                        <div class="mt-4 flex justify-between items-center">
-                            ${c.inVendita ? `<span class="bg-green-500 text-black text-xs font-bold px-2 py-1 rounded">€${c.prezzo}</span>` : '<span class="text-slate-500 text-xs text-italic">In collezione</span>'}
-                            <button class="text-slate-300 hover:text-white">ℹ️ Info</button>
+                <div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg flex flex-col">
+                    <div class="relative">
+                        <img src="${c.img}" alt="${c.titolo}" class="w-full h-72 object-cover opacity-80">
+                        ${c.inVendita ? `<div class="absolute top-2 right-2 badge-sale text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg uppercase">In Vendita</div>` : ''}
+                    </div>
+                    <div class="p-4 flex-grow">
+                        <p class="text-[10px] font-bold uppercase text-sky-400 tracking-widest mb-1">${c.serie}</p>
+                        <h3 class="text-sm font-bold leading-tight mb-1 text-white uppercase">${c.n}. ${c.titolo}</h3>
+                        <p class="text-xs text-slate-500">${c.anno} • ${c.condizione}</p>
+                    </div>
+                    <div class="p-4 pt-0 border-t border-slate-800 mt-auto bg-slate-900/50">
+                        <div class="flex justify-between items-center mt-3">
+                            <span class="text-lg font-bold ${c.inVendita ? 'text-green-400' : 'text-slate-600'}">
+                                ${c.inVendita ? '€'+c.prezzo : 'NFS'}
+                            </span>
+                            <button class="text-[10px] bg-slate-800 hover:bg-sky-500 px-3 py-1 rounded transition">DETTAGLI</button>
                         </div>
                     </div>
                 </div>
@@ -64,12 +91,22 @@
         }
 
         function filterComics(cat) {
+            if(cat === 'all') return renderComics(comics);
             const filtered = comics.filter(c => c.serie === cat);
             renderComics(filtered);
         }
 
-        renderCategories();
-        renderComics(comics);
+        function searchComics() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = comics.filter(c => 
+                c.titolo.toLowerCase().includes(term) || 
+                c.serie.toLowerCase().includes(term) ||
+                c.n.toString() === term
+            );
+            renderComics(filtered);
+        }
+
+        init();
     </script>
 </body>
 </html>
