@@ -1,0 +1,26 @@
+[
+  {
+    "serie": "Dylan Dog",
+    "n": 1,
+    "titolo": "L'alba dei morti viventi",
+    "anno": 1986,
+    "posseduto": true,
+    "condizione": "Ottima",
+    "inVendita": true,
+    "prezzo": 150,
+    "img": "https://www.sergiobonelli.it/resizer/-1/-1/true/1473413554443.jpg--.jpg",
+    "note": "Prima stampa"
+  },
+  {
+    "serie": "Diabolik",
+    "n": 100,
+    "titolo": "Morte di un idolo",
+    "anno": 1970,
+    "posseduto": true,
+    "condizione": "Buona",
+    "inVendita": false,
+    "prezzo": 0,
+    "img": "https://www.diabolik.it/immagini/albi/100_b.jpg",
+    "note": ""
+  }
+]
