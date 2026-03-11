@@ -2,110 +2,41 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comic Manager | Caniosan</title>
+    <title>Collezione Fumetti</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
-    <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: 'Inter', sans-serif; }
-        .comic-card { transition: all 0.3s ease; border: 1px solid #1e293b; }
-        .comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; box-shadow: 0 10px 20px -10px rgba(56, 189, 248, 0.3); }
-        .filter-btn.active { background-color: #38bdf8; color: #0f172a; font-weight: bold; }
-        .badge-sale { background: linear-gradient(90deg, #22c55e, #16a34a); }
-    </style>
 </head>
-<body class="p-4 md:p-8">
-
-    <header class="max-w-7xl mx-auto mb-12 text-center">
-        <h1 class="text-5xl font-black tracking-tighter text-white mb-4">MY COMIC ARCHIVE</h1>
-        <p class="text-slate-400 max-w-2xl mx-auto">Gestione professionale collezioni e vendita online. Scansiona il QR per accedere al catalogo aggiornato.</p>
-        
-        <div class="mt-8 max-w-md mx-auto">
-            <input type="text" id="searchInput" onkeyup="searchComics()" placeholder="Cerca titolo o numero..." class="w-full px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-sky-500 text-white">
-        </div>
-
-        <nav class="mt-8 flex flex-wrap justify-center gap-3" id="categories">
-            <button onclick="filterComics('all')" class="filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700 active">Tutti</button>
-            </nav>
-    </header>
-
-    <main class="max-w-7xl mx-auto">
-        <div id="comic-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+<body class="bg-slate-950 text-white p-5">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8 text-center text-sky-400">ARCHIVIO FUMETTI</h1>
+        <div id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
             </div>
-    </main>
+    </div>
 
     <script>
-    const myCategories = ["Dylan Dog", "Dylan Dog Ristampa", "Dylan Dog Book", "Dylan Dog Super Book", "Albo Gigante", "Diabolik", "Diabolik Ristampe", "Diabolik Annate", "Brendon", "Simpsons Panini"];
-    let comics = []; // Inizialmente vuoto
+        // METTI IL TUO LINK TRA GLI APICI QUI SOTTO
+        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv';
 
-    async function loadData() {
-        try {
-            // Carica i dati dal file esterno
-            const response = await fetch('database.json');
-            comics = await response.json();
-            renderComics(comics);
-        } catch (error) {
-            console.error("Errore nel caricamento del database:", error);
+        async function data() {
+            const r = await fetch(url);
+            const text = await r.text();
+            const rows = text.split('\n').slice(1); // Salta la prima riga
+            
+            const html = rows.map(row => {
+                const col = row.split(',');
+                if (col.length < 4 || !col[3]) return ''; // Salta se non hai messo "si" in POSSEDUTO
+                
+                return `
+                <div class="bg-slate-900 border border-slate-800 rounded-lg overflow-hidden p-2">
+                    <img src="${col[6] || 'https://via.placeholder.com/150x200'}" class="w-full h-48 object-cover rounded">
+                    <div class="mt-2 text-xs font-bold text-sky-500 uppercase">${col[0]}</div>
+                    <div class="font-bold text-sm">#${col[1]} - ${col[2]}</div>
+                    <div class="text-green-500 font-bold mt-1">${col[4] > 0 ? '€'+col[4] : 'In Collezione'}</div>
+                </div>`;
+            }).join('');
+            
+            document.getElementById('grid').innerHTML = html;
         }
-    }
-
-    function init() {
-        const nav = document.getElementById('categories');
-        myCategories.forEach(cat => {
-            const btn = document.createElement('button');
-            btn.className = "filter-btn px-4 py-2 bg-slate-800 rounded-md text-sm hover:bg-slate-700";
-            btn.innerText = cat;
-            btn.onclick = (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                filterComics(cat);
-            };
-            nav.appendChild(btn);
-        });
-        loadData(); // Avvia il caricamento dal file esterno
-    }
-
-    function renderComics(data) {
-        const grid = document.getElementById('comic-grid');
-        grid.innerHTML = data.map(c => `
-            <div class="comic-card bg-slate-900 rounded-xl overflow-hidden shadow-lg flex flex-col">
-                <div class="relative">
-                    <img src="${c.img}" alt="${c.titolo}" class="w-full h-72 object-cover opacity-90">
-                    ${c.inVendita ? `<div class="absolute top-2 right-2 bg-green-500 text-black text-[10px] font-bold px-2 py-1 rounded shadow-lg">IN VENDITA</div>` : ''}
-                </div>
-                <div class="p-4 flex-grow">
-                    <p class="text-[10px] font-bold uppercase text-sky-400 tracking-widest mb-1">${c.serie}</p>
-                    <h3 class="text-sm font-bold leading-tight mb-1 text-white uppercase">${c.n}. ${c.titolo}</h3>
-                    <p class="text-xs text-slate-500">${c.anno} • ${c.condizione}</p>
-                </div>
-                <div class="p-4 pt-0 border-t border-slate-800 mt-auto">
-                    <div class="flex justify-between items-center mt-3">
-                        <span class="text-lg font-bold ${c.inVendita ? 'text-green-400' : 'text-slate-600'}">
-                            ${c.inVendita ? '€' + c.prezzo : 'COLLEZIONE'}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function filterComics(cat) {
-        if(cat === 'all') return renderComics(comics);
-        const filtered = comics.filter(c => c.serie === cat);
-        renderComics(filtered);
-    }
-
-    function searchComics() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = comics.filter(c => 
-            c.titolo.toLowerCase().includes(term) || 
-            c.serie.toLowerCase().includes(term) ||
-            c.n.toString() === term
-        );
-        renderComics(filtered);
-    }
-
-    init();
-</script>
+        data();
+    </script>
 </body>
 </html>
