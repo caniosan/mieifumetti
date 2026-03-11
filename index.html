@@ -1,17 +1,63 @@
 <!DOCTYPE html>
 <html lang="it">
+<<!DOCTYPE html>
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Archivio Fumetti | Caniosan</title>
+    <title>Safarà | Archivio Fumetti</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0f172a; color: #f8fafc; font-family: ui-sans-serif, system-ui; }
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        /* Applichiamo il Serif ai titoli */
+        .serif-title { font-family: 'Cormorant Garamond', serif; }
         .collection-card { transition: all 0.3s ease; border: 1px solid #1e293b; background: #111827; }
         .collection-card:hover { transform: translateY(-5px); border-color: #38bdf8; }
     </style>
-    <meta name="referrer" content="no-referrer">
 </head>
+<body class="p-6 md:p-12">
+    <header class="max-w-6xl mx-auto text-center mb-16">
+        <h1 class="serif-title text-6xl md:text-8xl font-light italic tracking-widest text-white mb-2 uppercase">Safarà</h1>
+        <p class="text-sky-500 uppercase tracking-[0.4em] text-[10px] font-bold mb-8">Antichità • Curiosità • Fumetti</p>
+
+        <div class="flex justify-center mb-10">
+            <img src="logo.png" alt="Safarà Archivio" class="w-full max-w-xl h-64 object-cover rounded-sm border border-slate-800 shadow-2xl sepia-[0.2]">
+        </div>
+
+        <div class="h-px w-32 bg-slate-800 mx-auto mb-4"></div>
+        <p class="serif-title italic text-slate-400 text-lg">"Ogni oggetto ha una storia, ogni fumetto un ricordo."</p>
+    </header>
+
+    <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="menu-raccolte"></main>
+
+    <script>
+        // ... (Il resto dello script delle raccolte rimane uguale a quello precedente)
+        const raccolte = [
+            { id: "dyd", nome: "Dylan Dog" },
+            { id: "dyd-rist", nome: "Dylan Dog Ristampa" },
+            { id: "dyd-book", nome: "Dylan Dog Collezione Book" },
+            { id: "dyd-super", nome: "Dylan Dog Super Book" },
+            { id: "dyd-gig", nome: "Dylan Dog Albo Gigante" },
+            { id: "diab", nome: "Diabolik" },
+            { id: "diab-rist", nome: "Diabolik Ristampe" },
+            { id: "diab-ann", nome: "Diabolik Annate" },
+            { id: "brendon", nome: "Brendon" },
+            { id: "simpsons", nome: "Simpsons Panini Comics" }
+        ];
+
+        document.getElementById('menu-raccolte').innerHTML = raccolte.map(r => `
+            <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 rounded-lg flex flex-col justify-between h-48 group">
+                <h2 class="serif-title text-2xl font-bold uppercase tracking-tight group-hover:text-sky-400 transition-colors">${r.nome}</h2>
+                <div class="flex justify-between items-center mt-4">
+                    <span class="text-[9px] font-bold text-slate-500 tracking-[0.2em] uppercase">Sfoglia il catalogo</span>
+                    <span class="text-sky-500">→</span>
+                </div>
+            </a>
+        `).join('');
+    </script>
+</body>
+</html>
 <body class="p-6 md:p-12">
     <header class="max-w-6xl mx-auto text-center mb-12">
     <h1 class="text-5xl md:text-7xl font-black italic tracking-tighter mb-2 text-white">SAFARÀ</h1>
