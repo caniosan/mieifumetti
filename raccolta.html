@@ -2,83 +2,69 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>Safarà | Dettaglio Raccolta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
+    <title>Safarà | Archivio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .serif-title { font-family: 'Cormorant Garamond', serif; }
+        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; }
+        .comic-card:hover { transform: scale(1.02); border-color: #38bdf8; }
+    </style>
 </head>
-<body class="bg-slate-950 text-white p-6">
-    <div class="max-w-6xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
-            <a href="index.html" class="text-sky-500 font-bold text-xs uppercase tracking-widest border border-sky-500/30 px-4 py-2 rounded-full hover:bg-sky-500/10 transition">← Home</a>
-            <h1 id="titolo-serie" class="text-3xl font-black uppercase italic tracking-tighter text-center">...</h1>
-            <div class="w-24"></div> </header>
-        
-        <div id="grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
-    </div>
+<body class="p-4 md:p-10">
+    <header class="max-w-7xl mx-auto mb-10">
+        <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase">← Torna alla Home</a>
+        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Caricamento...</h1>
+    </header>
+
+    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        </main>
 
     <script>
-        // CONFIGURAZIONE LINK CSV (Sostituisci IL_TUO_LINK con i link reali di Google Sheets)
-        const links = {
-            'dyd': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=0&single=true&output=csv',
-            'dyd-rist': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1422213309&single=true&output=csv',
-            'dyd-book': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=530551093&single=true&output=csv',
-            'dyd-super': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=319434338&single=true&output=csv',
-            'dyd-gig': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1112494760&single=true&output=csv',
-            'diab': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=2012731827&single=true&output=csv',
-            'diab-rist': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv',
-            'diab-ann': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv',
-            'brendon': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv',
-            'simpsons': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv'
-        };
+        // 1. CONFIGURAZIONE - Sostituisci questo ID con quello del tuo script o CSV
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
 
-        const params = new URLSearchParams(window.location.search);
-        const serieId = params.get('serie');
-        const nomiEstesi = {
-            'dyd': 'Dylan Dog', 'dyd-rist': 'Dylan Dog Ristampa', 'dyd-book': 'Dylan Dog Collezione Book',
-            'dyd-super': 'Dylan Dog Super Book', 'dyd-gig': 'Dylan Dog Albo Gigante', 'diab': 'Diabolik',
-            'diab-rist': 'Diabolik Ristampe', 'diab-ann': 'Diabolik Annate', 'brendon': 'Brendon', 'simpsons': 'Simpsons Panini Comics'
-        };
+        async function caricaDati() {
+            const params = new URLSearchParams(window.location.search);
+            const serieId = params.get('serie');
+            document.getElementById('titolo-serie').innerText = serieId.toUpperCase().replace(/-/g, ' ');
 
-        if (links[serieId]) {
-            document.getElementById('titolo-serie').innerText = nomiEstesi[serieId];
-            
-            Papa.parse(links[serieId], {
-                download: true,
-                header: true,
-                complete: function(results) {
-                    const mine = results.data.filter(i => i.POSSEDUTO && i.POSSEDUTO.toLowerCase() === 'si');
-                    render(mine);
-                }
-            });
-        }
+            try {
+                const response = await fetch(CSV_URL);
+                const data = await response.text();
+                const righe = data.split('\n').slice(1); // Salta l'intestazione
 
-        function render(data) {
-            const grid = document.getElementById('grid');
-            if (data.length === 0) {
-                grid.innerHTML = '<p class="col-span-full text-center text-slate-500 py-20 font-mono uppercase text-xs">Nessun albo presente in questa raccolta.</p>';
-                return;
+                const container = document.getElementById('lista-fumetti');
+                container.innerHTML = "";
+
+                righe.forEach(riga => {
+                    const colonne = riga.split(','); 
+                    // ASSUMIAMO: Colonna 1: Numero, Colonna 2: Titolo, Colonna 6: Link Immagine
+                    const numero = colonne[1];
+                    const titolo = colonne[2];
+                    const img = colonne[6] ? colonne[6].trim() : "";
+
+                    if(numero) {
+                        container.innerHTML += `
+                            <div class="comic-card rounded-lg overflow-hidden shadow-2xl">
+                                <img src="${img}" alt="N.${numero}" class="w-full h-72 object-cover bg-slate-800" onerror="this.src='https://via.placeholder.com/300x400?text=Copertina+Non+Disponibile'">
+                                <div class="p-3">
+                                    <p class="text-sky-500 text-[10px] font-bold uppercase">Numero ${numero}</p>
+                                    <h3 class="serif-title text-lg leading-tight text-white">${titolo}</h3>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error("Errore caricamento:", error);
             }
-            grid.innerHTML = data.map(i => `
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col shadow-2xl">
-                    <img src="${i.IMG || 'https://via.placeholder.com/300x450?text=Copertina'}" class="w-full h-64 object-cover border-b border-slate-800">
-                    <div class="p-4 flex-grow">
-                        <h3 class="font-bold text-sm uppercase leading-tight">#${i.NUMERO} - ${i.TITOLO}</h3>
-                        <p class="text-[10px] text-slate-500 mt-2 font-bold">${i.CONDIZIONE || 'CONDIZIONE N.D.'}</p>
-                    </div>
-                    <div class="p-4 pt-0 mt-auto">
-                        <div class="text-green-500 font-black text-lg">${i.PREZZO > 0 ? '€'+i.PREZZO : ''}</div>
-                    </div>
-                </div>
-            `).join('');
         }
+
+        caricaDati();
     </script>
 </body>
 </html>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
-<style>
-    .serif-title { font-family: 'Cormorant Garamond', serif; }
-    body { background-color: #0b0f1a; }
-</style>
-
-<h1 id="titolo-serie" class="serif-title text-4xl font-light uppercase tracking-widest text-center italic text-white">...</h1>
