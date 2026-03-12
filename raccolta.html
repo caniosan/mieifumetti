@@ -10,19 +10,19 @@
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; height: 100%; }
+        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; }
         .comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; }
     </style>
 </head>
 <body class="p-4 md:p-10">
     <header class="max-w-7xl mx-auto mb-10">
         <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
-        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Archivio</h1>
+        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic uppercase tracking-tighter">Archivio</h1>
     </header>
 
     <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        <div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl animate-pulse">
-            Caricamento dati dal database...
+        <div id="loading-msg" class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl animate-pulse">
+            Consultando i registri di Safarà...
         </div>
     </main>
 
@@ -33,39 +33,45 @@
             const params = new URLSearchParams(window.location.search);
             const serieTarget = params.get('serie'); // es: dyd
             
+            if (serieTarget) {
+                document.getElementById('titolo-serie').innerText = serieTarget.replace(/-/g, ' ');
+            }
+
             try {
                 const response = await fetch(CSV_URL);
                 const text = await response.text();
                 
-                // Pulizia righe
+                // Dividiamo le righe in modo robusto
                 const righe = text.split(/\r?\n/).filter(r => r.trim() !== "");
                 const container = document.getElementById('lista-fumetti');
-                container.innerHTML = "";
-
+                const loadingMsg = document.getElementById('loading-msg');
+                
+                let htmlContent = "";
                 let contatore = 0;
 
-                // Partiamo da 1 per saltare l'intestazione
+                // Partiamo da 1 per saltare l'intestazione (A, B, C...)
                 for (let i = 1; i < righe.length; i++) {
-                    // Questa regex gestisce correttamente le virgole dentro i campi tra virgolette
-                    const colonne = righe[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || righe[i].split(',');
+                    // Questa funzione gestisce correttamente le virgole dentro i campi (CSV standard)
+                    const colonne = parseCSVLine(righe[i]);
                     
-                    const serieOriginale = colonne[0]?.replace(/"/g, "").trim();
-                    const numero = colonne[1]?.replace(/"/g, "").trim();
-                    const titolo = colonne[2]?.replace(/"/g, "").trim();
-                    const img = colonne[6]?.replace(/"/g, "").trim(); // Colonna G
+                    const serieOriginale = colonne[0]?.trim().toLowerCase(); // Colonna A
+                    const numero = colonne[1]?.trim();                     // Colonna B
+                    const titolo = colonne[2]?.trim();                     // Colonna C
+                    const img = colonne[6]?.trim();                        // Colonna G
 
-                    if (serieOriginale === serieTarget) {
+                    if (serieOriginale === serieTarget?.toLowerCase()) {
                         contatore++;
-                        container.innerHTML += `
-                            <div class="comic-card rounded-lg overflow-hidden flex flex-col shadow-xl">
-                                <div class="aspect-[2/3] bg-slate-800 overflow-hidden">
+                        htmlContent += `
+                            <div class="comic-card rounded-lg overflow-hidden flex flex-col shadow-xl border-b-2 border-b-slate-900">
+                                <div class="aspect-[2/3] bg-slate-800 overflow-hidden relative">
                                     <img src="${img}" 
-                                         class="w-full h-full object-cover" 
+                                         alt="Copertina" 
+                                         class="w-full h-full object-cover transition-transform duration-700 hover:scale-110" 
                                          onerror="this.src='https://via.placeholder.com/300x450/1e293b/38bdf8?text=N.+${numero}';">
                                 </div>
-                                <div class="p-3 bg-slate-900/80 flex-grow">
-                                    <p class="text-sky-500 text-[10px] font-bold uppercase tracking-widest">N. ${numero}</p>
-                                    <h3 class="serif-title text-lg leading-tight text-white">${titolo}</h3>
+                                <div class="p-4 bg-slate-900/50 flex-grow">
+                                    <p class="text-sky-500 text-[10px] font-black uppercase tracking-widest mb-1">Numero ${numero}</p>
+                                    <h3 class="serif-title text-xl leading-tight text-white font-bold italic">${titolo || 'Senza Titolo'}</h3>
                                 </div>
                             </div>
                         `;
@@ -73,13 +79,35 @@
                 }
 
                 if (contatore === 0) {
-                    container.innerHTML = `<div class="col-span-full text-center py-10">Nessun fumetto trovato per la serie: ${serieTarget}</div>`;
+                    container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 italic serif-title text-2xl">Nessun fumetto trovato per "${serieTarget}". Controlla la Colonna A del foglio!</div>`;
+                } else {
+                    container.innerHTML = htmlContent;
                 }
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('lista-fumetti').innerHTML = "Errore nel caricamento del database.";
+                document.getElementById('lista-fumetti').innerHTML = "<p class='col-span-full text-center text-red-500'>Errore durante il caricamento. Controlla la connessione.</p>";
             }
+        }
+
+        // Funzione magica per leggere correttamente i CSV complicati
+        function parseCSVLine(line) {
+            const result = [];
+            let current = "";
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = "";
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
         }
 
         caricaDati();
