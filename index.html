@@ -21,6 +21,9 @@
             border-color: #38bdf8; 
             box-shadow: 0 10px 30px -10px rgba(56, 189, 248, 0.2);
         }
+        /* Stile per la barra di ricerca */
+        #search-input::placeholder { color: #475569; font-style: italic; }
+        #search-input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.1); }
     </style>
 </head>
 <body class="p-6 md:p-12">
@@ -38,11 +41,21 @@
         <div class="h-px w-32 bg-slate-800 mx-auto mb-4"></div>
         <p class="serif-title italic text-slate-400 text-lg">"Ogni oggetto ha una storia, ogni fumetto un ricordo."</p>
 
-        <div class="mt-8">
+        <div class="mt-8 flex flex-col items-center gap-6">
             <a href="statistiche.html" class="inline-flex items-center gap-3 px-8 py-3 border border-sky-500/30 rounded-full bg-sky-500/5 text-sky-400 hover:bg-sky-500 hover:text-white transition-all duration-300 group">
                 <span class="text-xs font-bold uppercase tracking-[0.3em]">Statistiche Collezione</span>
                 <span class="text-xl group-hover:rotate-12 transition-transform">📊</span>
             </a>
+
+            <div class="relative w-full max-w-md">
+                <input type="text" id="search-input" placeholder="Cerca tra i registri..." 
+                    class="w-full bg-[#0f172a] border border-slate-800 text-slate-200 text-sm rounded-full px-6 py-3 pl-12 transition-all">
+                <span class="absolute left-5 top-3.5 text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
+            </div>
         </div>
     </header>
 
@@ -63,15 +76,37 @@
         ];
 
         const menuContainer = document.getElementById('menu-raccolte');
-        menuContainer.innerHTML = raccolte.map(r => `
-            <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 flex flex-col justify-between h-48 group">
-                <h2 class="serif-title text-2xl font-bold uppercase tracking-tight group-hover:text-sky-400 transition-colors">${r.nome}</h2>
-                <div class="flex justify-between items-center mt-4">
-                    <span class="text-[9px] font-bold text-slate-500 tracking-[0.2em] uppercase">Apri Registro</span>
-                    <span class="text-sky-500 text-xl group-hover:translate-x-2 transition-transform">→</span>
-                </div>
-            </a>
-        `).join('');
+        const searchInput = document.getElementById('search-input');
+
+        // Funzione per renderizzare le card
+        function renderCards(filter = "") {
+            const filtered = raccolte.filter(r => 
+                r.nome.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                menuContainer.innerHTML = `<p class="col-span-full text-center text-slate-600 italic py-10">Nessun registro trovato per "${filter}"</p>`;
+                return;
+            }
+
+            menuContainer.innerHTML = filtered.map(r => `
+                <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 flex flex-col justify-between h-48 group animate-in fade-in duration-500">
+                    <h2 class="serif-title text-2xl font-bold uppercase tracking-tight group-hover:text-sky-400 transition-colors">${r.nome}</h2>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-[9px] font-bold text-slate-500 tracking-[0.2em] uppercase">Apri Registro</span>
+                        <span class="text-sky-500 text-xl group-hover:translate-x-2 transition-transform">→</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // Event listener per la ricerca
+        searchInput.addEventListener('input', (e) => {
+            renderCards(e.target.value);
+        });
+
+        // Inizializzazione
+        renderCards();
     </script>
 </body>
 </html>
