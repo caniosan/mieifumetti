@@ -9,93 +9,80 @@
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-row { 
-            background: #111827; 
-            border-left: 3px solid #1e293b;
-            transition: all 0.2s ease;
-        }
-        .comic-row:hover { 
-            border-left-color: #38bdf8; 
-            background: #161e2d; 
-        }
+        .comic-row { background: #111827; border-left: 3px solid #1e293b; transition: all 0.2s ease; }
+        .comic-row:hover { border-left-color: #38bdf8; background: #161e2d; }
     </style>
 </head>
-<body class="p-6 md:p-12">
+<body class="p-6 md:p-12 text-center">
 
-    <header class="max-w-4xl mx-auto mb-16 border-b border-slate-800 pb-10 text-center">
+    <header class="max-w-4xl mx-auto mb-16 border-b border-slate-800 pb-10">
         <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-[0.3em] text-[10px] uppercase transition-colors">← Torna all'Archivio</a>
         <h1 id="titolo-serie" class="serif-title text-6xl md:text-8xl text-white mt-6 italic uppercase tracking-tighter">Catalogo</h1>
-        
-        <div id="btn-serie-generale" class="mt-6"></div>
-        
+        <div id="btn-serie-generale" class="mt-8"></div>
         <p class="text-slate-500 text-[10px] uppercase tracking-[0.5em] mt-8">Inventario Ufficiale Safarà</p>
     </header>
 
-    <main id="lista-fumetti" class="max-w-3xl mx-auto space-y-4">
+    <main id="lista-fumetti" class="max-w-3xl mx-auto space-y-4 text-left">
         <div class="text-center py-20 text-slate-600 serif-title text-2xl animate-pulse italic">
             Sincronizzando i volumi...
         </div>
     </main>
 
     <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
+        // --- CONFIGURAZIONE LINK CSV PER OGNI FOGLIO ---
+        // Incolla qui i link CSV generati per ogni singola linguetta di Google Sheets
+        const CSV_LINKS = {
+            "dyd": "Lhttps://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=0&single=true&output=csv",
+            "dyd-rist": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1422213309&single=true&output=csv",
+            "dyd-book": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=530551093&single=true&output=csv",
+            "dyd-super": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=319434338&single=true&output=csv",
+            "dyd-gig": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1112494760&single=true&output=csv",
+            "diab": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=2012731827&single=true&output=csv",
+            "diab-rist": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv",
+            "diab-annate": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv",
+            "brendon": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv",
+            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv"
+        };
 
         const dizionarioNomi = {
-            "dyd": "Dylan Dog",
-            "dyd-rist": "Dylan Dog Ristampa",
-            "dyd-book": "Dylan Dog Collezione Book",
-            "dyd-super": "Dylan Dog Super Book",
-            "dyd-gig": "Dylan Dog Albo Gigante",
-            "diab": "Diabolik",
-            "diab-rist": "Diabolik Ristampa",
-            "brendon": "Brendon",
-            "simpsons": "I Simpsons"
+            "dyd": "Dylan Dog", "dyd-rist": "Dylan Dog Ristampa", "dyd-book": "Dylan Dog Book",
+            "dyd-super": "Dylan Dog Super Book", "dyd-gig": "Dylan Dog Gigante",
+            "diab": "Diabolik", "diab-rist": "Diabolik Ristampa", "diab-annate": "Diabolik Annate","brendon": "Brendon", "simpsons": "I Simpsons"
         };
 
         const linksSerieGenerali = {
             "dyd": "https://www.comics.org/series/3211/",
-            "dyd-rist": "https://www.comics.org/series/102898/", 
+            "dyd-rist": "https://www.comics.org/series/102898/",
             "dyd-book": "https://www.comics.org/series/86765/",
             "dyd-super": "https://www.comics.org/series/79808/",
             "dyd-gig": "https://www.comics.org/series/79809/",
             "diab": "https://www.comics.org/series/18176/",
             "diab-rist": "https://www.comics.org/series/25401/",
+            "diab-annate": "https://www.comics.org/series/18176/",
             "brendon": "https://www.comics.org/series/6049/"
         };
 
-        function splitCsvLine(line) {
-            const parts = [];
-            let currentPart = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"') { inQuotes = !inQuotes; }
-                else if (char === ',' && !inQuotes) {
-                    parts.push(currentPart.trim());
-                    currentPart = '';
-                } else { currentPart += char; }
-            }
-            parts.push(currentPart.trim());
-            return parts;
-        }
+        function clean(str) { return str ? str.toString().toLowerCase().trim().replace(/["']/g, "") : ""; }
 
         async function caricaDati() {
             const params = new URLSearchParams(window.location.search);
-            const serieTarget = params.get('serie')?.toLowerCase().trim();
+            const serieTarget = clean(params.get('serie'));
+            const csvUrl = CSV_LINKS[serieTarget]; // Seleziona il foglio giusto
             
             if (serieTarget) {
                 document.getElementById('titolo-serie').innerText = dizionarioNomi[serieTarget] || serieTarget.toUpperCase();
                 if (linksSerieGenerali[serieTarget]) {
-                    document.getElementById('btn-serie-generale').innerHTML = `
-                        <a href="${linksSerieGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/30 text-sky-400 px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all">
-                            Scheda Serie Generale ↗
-                        </a>
-                    `;
+                    document.getElementById('btn-serie-generale').innerHTML = `<a href="${linksSerieGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/30 text-sky-400 px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all">Scheda Serie Generale ↗</a>`;
                 }
             }
 
+            if (!csvUrl || csvUrl.startsWith("LINK_CSV")) {
+                document.getElementById('lista-fumetti').innerHTML = `<div class="text-center py-20 text-red-400 uppercase text-[10px] font-bold tracking-widest">Link CSV non configurato per questa serie.</div>`;
+                return;
+            }
+
             try {
-                const response = await fetch(CSV_URL);
+                const response = await fetch(csvUrl);
                 const data = await response.text();
                 const righe = data.split(/\r?\n/).filter(line => line.trim().length > 0);
                 const container = document.getElementById('lista-fumetti');
@@ -104,47 +91,33 @@
                 let trovati = 0;
 
                 for (let i = 1; i < righe.length; i++) {
-                    const colonne = splitCsvLine(righe[i]);
-                    
-                    // PULIZIA TOTALE: rimuove virgolette, spazi e trasforma in minuscolo
-                    const serieFoglio = colonne[0]?.toLowerCase().replace(/["']/g, "").trim();
-                    const numero = colonne[1];
-                    const titolo = colonne[2]?.replace(/^"|"$/g, '').trim() || "Senza Titolo";
-                    const posseduto = colonne[3]?.toLowerCase().replace(/["']/g, "").trim();
-                    const prezzo = colonne[4] || "---";
-                    const condizione = colonne[5] || "---";
+                    const col = righe[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const numero = col[1];
+                    const titolo = col[2]?.replace(/["']/g, "") || "---";
+                    const posseduto = clean(col[3]);
+                    const prezzo = col[4] || "---";
+                    const condizione = col[5] || "---";
 
-                    if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
+                    // In questo caso il match sulla serie (col[0]) è opzionale perché il foglio è già specifico
+                    if (posseduto === "si" || posseduto === "sì" || posseduto === "x") {
                         trovati++;
                         html += `
                             <div class="comic-row p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                 <div class="flex-grow">
                                     <div class="flex items-baseline gap-4 mb-1">
-                                        <span class="text-sky-500 font-black text-xs tracking-tighter">#${numero}</span>
-                                        <h3 class="serif-title text-2xl md:text-3xl text-slate-200 leading-none tracking-tight italic">${titolo}</h3>
+                                        <span class="text-sky-500 font-black text-xs">#${numero}</span>
+                                        <h3 class="serif-title text-2xl md:text-3xl text-slate-200 italic">${titolo}</h3>
                                     </div>
                                     <div class="flex gap-4 mt-2">
-                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500">
-                                            Valore: <span class="text-slate-300">${prezzo}</span>
-                                        </div>
-                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500 border-l border-slate-800 pl-4">
-                                            Stato: <span class="text-slate-300 italic">${condizione}</span>
-                                        </div>
+                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500">Valore: <span class="text-slate-300">${prezzo}</span></div>
+                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500 border-l border-slate-800 pl-4">Stato: <span class="text-slate-300 italic">${condizione}</span></div>
                                     </div>
                                 </div>
-                                <div class="hidden md:block">
-                                    <span class="text-[8px] text-slate-700 font-bold uppercase tracking-[0.3em] border border-slate-800 px-3 py-1 rounded">Archiviato</span>
-                                </div>
-                            </div>
-                        `;
+                            </div>`;
                     }
                 }
-
-                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-24 text-slate-500 serif-title text-2xl italic">Nessun volume trovato per ${serieTarget}.</div>`;
-
-            } catch (err) {
-                container.innerHTML = "<div class='text-center py-20 text-red-400 uppercase text-[10px] font-bold tracking-widest'>Errore di sincronizzazione dati.</div>";
-            }
+                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-20 text-slate-500 italic">Nessun volume trovato.</div>`;
+            } catch (e) { container.innerHTML = "Errore caricamento dati."; }
         }
         caricaDati();
     </script>
