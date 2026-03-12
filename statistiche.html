@@ -18,7 +18,7 @@
         }
         .stat-card:hover { border-color: #38bdf8; transform: translateY(-5px); }
         .progress-bar { height: 6px; background: #1e293b; border-radius: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 1.5s ease-in-out; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #2563eb); width: 0%; transition: width 1.5s ease-in-out; }
     </style>
 </head>
 <body class="p-6 md:p-12">
@@ -29,7 +29,7 @@
                 <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-[0.2em] text-[10px] uppercase transition-colors">
                     ← Torna all'Archivio
                 </a>
-                <h1 class="serif-title text-6xl md:text-7xl text-white mt-4 italic tracking-tight">Statistiche</h1>
+                <h1 class="serif-title text-6xl md:text-7xl text-white mt-4 italic tracking-tight uppercase">Statistiche</h1>
                 <p class="text-slate-500 text-sm mt-2 italic">Il resoconto dei volumi custoditi a Safarà.</p>
             </div>
             
@@ -44,16 +44,27 @@
 
     <main class="max-w-6xl mx-auto">
         <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div class="col-span-full text-center py-20">
+            <div id="loading-state" class="col-span-full text-center py-20">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-sky-500 mb-4"></div>
-                <p class="serif-title text-2xl italic text-slate-500">Consultando i registri...</p>
+                <p class="serif-title text-2xl italic text-slate-500">Consultando i registri di Safarà...</p>
             </div>
         </div>
     </main>
 
     <script>
-        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
-
+        // --- CONFIGURAZIONE LINK CSV ---
+        const CSV_LINKS = {
+            "dyd": "Lhttps://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=0&single=true&output=csv",
+            "dyd-rist": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1422213309&single=true&output=csv",
+            "dyd-book": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=530551093&single=true&output=csv",
+            "dyd-super": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=319434338&single=true&output=csv",
+            "dyd-gig": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1112494760&single=true&output=csv",
+            "diab": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=2012731827&single=true&output=csv",
+            "diab-rist": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv",
+            "diab-ann": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv",
+            "brendon": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv",
+            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv"
+        };
         const nomiSerie = {
             "dyd": "Dylan Dog",
             "dyd-rist": "Dylan Dog Ristampa",
@@ -68,66 +79,66 @@
         };
 
         async function generaStatistiche() {
+            const container = document.getElementById('stats-grid');
+            let stats = {};
+            let totaleGenerale = 0;
+
             try {
-                const response = await fetch(CSV_URL);
-                const text = await response.text();
-                const righe = text.split(/\r?\n/).filter(r => r.trim() !== "").slice(1);
-                
-                let stats = {};
-                let totaleGenerale = 0;
-
-                righe.forEach(riga => {
-                    // Gestione avanzata CSV per titoli con virgole
-                    const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    
-                    const idSerie = colonne[0]?.replace(/"/g, "").trim();
-                    // --- MODIFICA QUI: INDICE 3 PER COLONNA D ---
-                    const posseduto = colonne[3]?.replace(/"/g, "").trim().toLowerCase(); 
-
-                    if (idSerie && nomiSerie[idSerie] && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
-                        stats[idSerie] = (stats[idSerie] || 0) + 1;
-                        totaleGenerale++;
-                    }
+                const fetchPromises = Object.entries(CSV_LINKS).map(async ([id, url]) => {
+                    if (!url || url === "LINK_QUI") return;
+                    try {
+                        const response = await fetch(url);
+                        const text = await response.text();
+                        const righe = text.split(/\r?\n/).filter(r => r.trim() !== "").slice(1);
+                        
+                        let contaAlbi = 0;
+                        righe.forEach(riga => {
+                            const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                            const posseduto = colonne[3]?.toLowerCase().trim().replace(/["']/g, "");
+                            if (posseduto === "si" || posseduto === "sì" || posseduto === "x") {
+                                contaAlbi++;
+                            }
+                        });
+                        if (contaAlbi > 0) {
+                            stats[id] = contaAlbi;
+                            totaleGenerale += contaAlbi;
+                        }
+                    } catch (e) { console.error("Errore: " + id); }
                 });
+
+                await Promise.all(fetchPromises);
 
                 document.getElementById('counter-totale').innerText = totaleGenerale;
                 document.getElementById('total-container').classList.remove('hidden');
-
-                const container = document.getElementById('stats-grid');
                 container.innerHTML = "";
 
-                const serieOrdinate = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
+                const serieOrdinate = Object.keys(stats).sort((a, b) => stats[b] - stats[a]);
 
                 if (serieOrdinate.length === 0) {
-                    container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 italic">Nessun fumetto segnato come posseduto (Colonna D).</div>`;
+                    container.innerHTML = `<p class="col-span-full text-center py-20 text-slate-500 italic">Nessun dato. Verifica i link CSV.</p>`;
                     return;
                 }
 
-                serieOrdinate.forEach(id => {
-                    const quantita = stats[id];
-                    const percentuale = ((quantita / totaleGenerale) * 100).toFixed(1);
-
+                serieOrdinate.forEach((id, index) => {
+                    const qta = stats[id];
+                    const perc = ((qta / totaleGenerale) * 100).toFixed(1);
                     container.innerHTML += `
                         <div class="stat-card p-8 rounded-3xl shadow-2xl">
-                            <div class="flex justify-between items-start mb-6">
-                                <h3 class="serif-title text-3xl text-white italic">${nomiSerie[id]}</h3>
-                                <span class="text-slate-700 font-black text-2xl">#${serieOrdinate.indexOf(id) + 1}</span>
+                            <div class="flex justify-between items-start mb-6 text-left">
+                                <h3 class="serif-title text-3xl text-white italic leading-tight uppercase">${nomiSerie[id]}</h3>
+                                <span class="text-slate-800 font-black text-2xl">#${index + 1}</span>
                             </div>
-                            <div class="flex items-end gap-2 mb-6">
-                                <span class="text-6xl font-black text-white tracking-tighter">${quantita}</span>
+                            <div class="flex items-end gap-2 mb-6 text-left">
+                                <span class="text-6xl font-black text-white tracking-tighter">${qta}</span>
                                 <span class="text-slate-500 text-xs font-bold uppercase pb-2 tracking-widest">Albi</span>
                             </div>
                             <div class="space-y-2">
-                                <div class="progress-bar"><div class="progress-fill" style="width: ${percentuale}%"></div></div>
-                                <p class="text-[10px] font-bold text-sky-400 uppercase tracking-widest text-right">${percentuale}% del totale</p>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${perc}%"></div></div>
+                                <p class="text-[10px] font-bold text-sky-400 uppercase tracking-widest text-right">${perc}% del totale</p>
                             </div>
                         </div>`;
                 });
-
-            } catch (err) {
-                console.error(err);
-                document.getElementById('stats-grid').innerHTML = "Errore di connessione al database.";
-            }
+            } catch (err) { container.innerHTML = "Errore caricamento dati."; }
         }
         generaStatistiche();
     </script>
