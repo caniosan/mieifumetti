@@ -8,20 +8,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b0f1a; color: #e2e8f0; }
+        body { background-color: #0b0f1a; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; }
-        .comic-card:hover { border-color: #38bdf8; transform: translateY(-3px); }
+        .comic-card { 
+            transition: all 0.3s ease; 
+            background: #111827; 
+            border: 1px solid #1e293b; 
+        }
+        .comic-card:hover { border-color: #38bdf8; transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5); }
     </style>
 </head>
-<body class="p-4 md:p-10 font-sans">
+<body class="p-4 md:p-10">
     <header class="max-w-7xl mx-auto mb-10 border-b border-slate-800 pb-6">
         <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
-        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic uppercase">Caricamento...</h1>
+        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic uppercase tracking-tighter">Archivio</h1>
     </header>
 
     <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        </main>
+        <div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl italic animate-pulse">Consultando i registri di Safarà...</div>
+    </main>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
@@ -58,32 +63,40 @@
                 for (let i = 1; i < righe.length; i++) {
                     const colonne = splitCsvLine(righe[i]);
                     
-                    const serieFoglio = colonne[0]?.toLowerCase(); // A: ID
+                    const serieFoglio = colonne[0]?.toLowerCase(); // A: ID Serie
                     const numero = colonne[1];                   // B: Numero
-                    const titolo = colonne[2]?.replace(/^"|"$/g, ''); // C: Titolo
+                    const titolo = colonne[2]?.replace(/^"|"$/g, '') || "Senza Titolo"; // C: Titolo
+                    // --- LOGICA FILTRO POSSEDUTI (Colonna D) ---
+                    const posseduto = colonne[3]?.toLowerCase().trim(); // D: Posseduto
+                    
                     const prezzo = colonne[4] || "---";          // E: Prezzo
                     const condizione = colonne[5] || "---";      // F: Condizione
                     const img = colonne[6];                      // G: Immagine
 
-                    if (serieFoglio === serieTarget) {
+                    // Mostra l'albo solo se:
+                    // 1. La serie corrisponde (es. dyd)
+                    // 2. Nella colonna D c'è scritto 'si', 'sì' oppure 'x'
+                    if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
                         trovati++;
                         html += `
-                            <div class="comic-card rounded-xl overflow-hidden flex flex-col shadow-2xl">
+                            <div class="comic-card rounded-xl overflow-hidden flex flex-col h-full shadow-2xl">
                                 <div class="aspect-[2/3] bg-slate-800 overflow-hidden relative">
                                     <img src="${img}" 
                                          referrerpolicy="no-referrer"
                                          class="w-full h-full object-cover" 
-                                         onerror="this.src='https://via.placeholder.com/300x450/1e293b/38bdf8?text=N.+${numero}';">
-                                </div>
-                                <div class="p-4 bg-slate-900/40 flex-grow">
-                                    <div class="flex justify-between items-start mb-1">
-                                        <p class="text-sky-500 text-[10px] font-black uppercase tracking-widest">N. ${numero}</p>
-                                        <span class="text-[9px] px-1.5 py-0.5 rounded border border-slate-700 text-slate-400 font-bold uppercase">${condizione}</span>
+                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x450/1e293b/38bdf8?text=N.+${numero}';">
+                                    <div class="absolute top-2 right-2">
+                                        <span class="bg-black/60 backdrop-blur-md text-[9px] px-2 py-1 rounded border border-white/20 text-white font-bold uppercase tracking-widest">${condizione}</span>
                                     </div>
-                                    <h3 class="serif-title text-xl text-white font-bold leading-tight mb-3 h-12 overflow-hidden">${titolo}</h3>
-                                    <div class="pt-2 border-t border-slate-800 flex justify-between items-center">
-                                        <span class="text-[9px] text-slate-500 uppercase font-bold tracking-tighter">Valore stima:</span>
-                                        <span class="text-white font-bold text-sm">${prezzo}</span>
+                                </div>
+                                <div class="p-4 bg-slate-900/40 flex-grow flex flex-col justify-between">
+                                    <div>
+                                        <p class="text-sky-500 text-[10px] font-black uppercase tracking-widest mb-1">Albo N. ${numero}</p>
+                                        <h3 class="serif-title text-xl text-white font-bold leading-tight mb-4">${titolo}</h3>
+                                    </div>
+                                    <div class="pt-3 border-t border-slate-800/50 flex justify-between items-center">
+                                        <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Valore stima</span>
+                                        <span class="text-sky-400 font-bold text-sm">${prezzo}</span>
                                     </div>
                                 </div>
                             </div>
@@ -91,11 +104,12 @@
                     }
                 }
 
-                container.innerHTML = trovati > 0 ? html : `<div class="col-span-full text-center py-20">Nessun fumetto trovato.</div>`;
+                container.innerHTML = trovati > 0 ? html : `<div class="col-span-full text-center py-20 text-slate-500 italic serif-title text-2xl text-center px-6">Non ci sono ancora volumi di questa serie nella tua collezione di Safarà.</div>`;
                 if(serieTarget) document.getElementById('titolo-serie').innerText = serieTarget.replace(/-/g, ' ');
 
             } catch (err) {
-                container.innerHTML = "Errore di connessione.";
+                console.error(err);
+                container.innerHTML = "<p class='col-span-full text-center text-red-400 font-bold'>Errore di sincronizzazione con il database.</p>";
             }
         }
         caricaDati();
