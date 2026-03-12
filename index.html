@@ -21,8 +21,6 @@
             border-color: #38bdf8; 
             box-shadow: 0 10px 30px -10px rgba(56, 189, 248, 0.2);
         }
-        .not-owned { opacity: 0.6; border-style: dashed; border-color: #334155; }
-        .not-owned:hover { border-color: #ef4444; box-shadow: 0 10px 30px -10px rgba(239, 68, 68, 0.1); }
         #search-input:focus { outline: none; border-color: #38bdf8; box-shadow: 0 0 20px rgba(56, 189, 248, 0.15); }
     </style>
 </head>
@@ -32,19 +30,13 @@
         <p class="text-sky-500 uppercase tracking-[0.4em] text-[10px] font-bold mb-8">Antichità • Curiosità • Fumetti</p>
 
         <div class="flex justify-center mb-10">
-            <div class="relative group">
-                <div class="absolute -inset-1 bg-gradient-to-r from-sky-600 to-blue-900 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                <img src="logo.png" alt="Safarà Archivio" class="relative w-full max-w-xl h-64 object-cover rounded-2xl border border-slate-800 shadow-2xl sepia-[0.2]">
-            </div>
+            <img src="logo.png" alt="Safarà" class="w-full max-w-xl h-64 object-cover rounded-2xl border border-slate-800 shadow-2xl">
         </div>
 
-        <div class="h-px w-32 bg-slate-800 mx-auto mb-4"></div>
-        <p class="serif-title italic text-slate-400 text-lg">"Ogni oggetto ha una storia, ogni fumetto un ricordo."</p>
-
         <div class="mt-8 flex flex-col items-center gap-6">
-            <a href="statistiche.html" class="inline-flex items-center gap-3 px-8 py-3 border border-sky-500/30 rounded-full bg-sky-500/5 text-sky-400 hover:bg-sky-500 hover:text-white transition-all duration-300 group">
+            <a href="statistiche.html" class="inline-flex items-center gap-3 px-8 py-3 border border-sky-500/30 rounded-full bg-sky-500/5 text-sky-400 hover:bg-sky-500 hover:text-white transition-all group">
                 <span class="text-xs font-bold uppercase tracking-[0.3em]">Statistiche Collezione</span>
-                <span class="text-xl group-hover:rotate-12 transition-transform">📊</span>
+                <span class="text-xl">📊</span>
             </a>
 
             <div class="relative w-full max-w-lg">
@@ -53,7 +45,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                 </span>
-                <input type="text" id="search-input" placeholder="Cerca un titolo in tutto il catalogo..." 
+                <input type="text" id="search-input" placeholder="Cerca tra gli albi posseduti..." 
                     class="w-full bg-[#0f172a] border border-slate-800 text-slate-200 text-sm rounded-full px-6 py-4 pl-12 transition-all">
                 <div id="search-status" class="absolute -bottom-6 right-4 text-[9px] uppercase tracking-widest text-slate-600 font-bold"></div>
             </div>
@@ -94,18 +86,13 @@
         const searchInput = document.getElementById('search-input');
         const statusLabel = document.getElementById('search-status');
 
-        // Funzione per pulire titoli e gestire apostrofi/virgolette
         function cleanText(text) {
             if (!text) return "";
-            return text
-                .replace(/^["']|["']$/g, "") // Rimuove virgolette esterne CSV
-                .replace(/""/g, '"')         // Sistema doppie virgolette interne
-                .replace(/[\u2018\u2019]/g, "'") // Converte apostrofi curvi in dritti
-                .trim();
+            return text.replace(/^["']|["']$/g, "").replace(/""/g, '"').replace(/[\u2018\u2019]/g, "'").trim();
         }
 
         async function indicizzaDatabase() {
-            statusLabel.innerText = "Sincronizzazione catalogo...";
+            statusLabel.innerText = "Sincronizzazione volumi...";
             const fetchPromises = Object.entries(CSV_LINKS).map(async ([id, url]) => {
                 try {
                     const response = await fetch(url);
@@ -114,22 +101,19 @@
                     righe.forEach(riga => {
                         const col = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                         const poss = col[3]?.toLowerCase().trim().replace(/["']/g, "");
-                        const isPosseduto = (poss === "si" || poss === "sì" || poss === "x");
-
-                        if (col[2]) {
+                        if ((poss === "si" || poss === "sì" || poss === "x") && col[2]) {
                             databaseTitoli.push({
                                 sId: id,
                                 sNome: raccolte.find(r => r.id === id).nome,
                                 num: col[1],
-                                tit: cleanText(col[2]),
-                                owned: isPosseduto
+                                tit: cleanText(col[2])
                             });
                         }
                     });
-                } catch (e) { console.error("Errore: " + id); }
+                } catch (e) { console.error(e); }
             });
             await Promise.all(fetchPromises);
-            statusLabel.innerText = "Safarà Online";
+            statusLabel.innerText = `${databaseTitoli.length} Albi in Archivio`;
         }
 
         function render(query = "") {
@@ -138,32 +122,26 @@
                     <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 flex flex-col justify-between h-48 group">
                         <h2 class="serif-title text-2xl font-bold uppercase tracking-tight group-hover:text-sky-400 transition-colors">${r.nome}</h2>
                         <div class="flex justify-between items-center mt-4 text-slate-500 group-hover:text-sky-500">
-                            <span class="text-[9px] font-bold tracking-[0.2em] uppercase">Registro</span>
+                            <span class="text-[9px] font-bold tracking-[0.2em] uppercase">Apri Registro</span>
                             <span class="text-xl group-hover:translate-x-2 transition-transform">→</span>
                         </div>
                     </a>
                 `).join('');
                 return;
             }
-
             const risultati = databaseTitoli.filter(item => 
                 item.tit.toLowerCase().includes(query.toLowerCase()) || 
-                item.num.toString() === query.trim() ||
-                item.sNome.toLowerCase().includes(query.toLowerCase())
+                item.num.toString() === query.trim()
             ).slice(0, 24);
 
             if (risultati.length === 0) {
                 menuContainer.innerHTML = `<p class="col-span-full text-center text-slate-600 italic py-10 serif-title text-xl">Nessun volume trovato.</p>`;
                 return;
             }
-
             menuContainer.innerHTML = risultati.map(r => `
-                <a href="raccolta.html?serie=${r.sId}" class="collection-card p-6 flex flex-col justify-center h-32 group ${r.owned ? 'border-sky-900/20' : 'not-owned'}">
-                    <div class="flex justify-between items-start">
-                        <span class="text-[9px] ${r.owned ? 'text-sky-500' : 'text-slate-500'} font-bold uppercase tracking-[0.2em]">${r.sNome} #${r.num}</span>
-                        ${!r.owned ? '<span class="text-[8px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded border border-red-500/20 font-black uppercase tracking-tighter">Albo non posseduto</span>' : ''}
-                    </div>
-                    <h2 class="serif-title text-lg md:text-xl font-bold text-white group-hover:text-sky-400 leading-tight transition-colors mt-1">${r.tit}</h2>
+                <a href="raccolta.html?serie=${r.sId}" class="collection-card p-6 flex flex-col justify-center h-32 group border-sky-900/20">
+                    <span class="text-[9px] text-sky-500 font-bold uppercase tracking-[0.2em] mb-1">${r.sNome} #${r.num}</span>
+                    <h2 class="serif-title text-lg md:text-xl font-bold text-white group-hover:text-sky-400 transition-colors">${r.tit}</h2>
                 </a>
             `).join('');
         }
