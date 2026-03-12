@@ -10,57 +10,82 @@
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; }
-        .comic-card:hover { transform: scale(1.02); border-color: #38bdf8; }
+        .comic-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: #111827; border: 1px solid #1e293b; }
+        .comic-card:hover { transform: translateY(-10px); border-color: #38bdf8; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
     </style>
 </head>
 <body class="p-4 md:p-10">
-    <header class="max-w-7xl mx-auto mb-10">
-        <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase">← Torna alla Home</a>
-        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Caricamento...</h1>
+    <header class="max-w-7xl mx-auto mb-10 flex justify-between items-end border-b border-slate-800 pb-6">
+        <div>
+            <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
+            <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Archivio</h1>
+        </div>
+        <div class="text-right hidden md:block">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Safarà • Database</p>
+        </div>
     </header>
 
-    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        </main>
+    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        <div class="col-span-full text-center py-20">
+            <p class="serif-title text-2xl italic text-slate-500 animate-pulse">Consultando gli archivi di Safarà...</p>
+        </div>
+    </main>
 
     <script>
-        // 1. CONFIGURAZIONE - Sostituisci questo ID con quello del tuo script o CSV
+        // Il tuo link CSV fornito
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
 
         async function caricaDati() {
             const params = new URLSearchParams(window.location.search);
-            const serieId = params.get('serie');
-            document.getElementById('titolo-serie').innerText = serieId.toUpperCase().replace(/-/g, ' ');
-
+            const serieId = params.get('serie'); // Es: dyd, diab...
+            
             try {
                 const response = await fetch(CSV_URL);
                 const data = await response.text();
-                const righe = data.split('\n').slice(1); // Salta l'intestazione
-
+                
+                // Dividiamo per righe e puliamo da eventuali ritorni a capo strani
+                const righe = data.split(/\r?\n/).slice(1); 
                 const container = document.getElementById('lista-fumetti');
                 container.innerHTML = "";
 
-                righe.forEach(riga => {
-                    const colonne = riga.split(','); 
-                    // ASSUMIAMO: Colonna 1: Numero, Colonna 2: Titolo, Colonna 6: Link Immagine
-                    const numero = colonne[1];
-                    const titolo = colonne[2];
-                    const img = colonne[6] ? colonne[6].trim() : "";
+                let trovati = 0;
 
-                    if(numero) {
+                righe.forEach(riga => {
+                    // Usiamo una regex per gestire eventuali virgole dentro i titoli
+                    const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    
+                    const serieFoglio = colonne[0]?.trim(); // Colonna A: ID Serie
+                    const numero = colonne[1]?.trim();      // Colonna B: Numero
+                    const titolo = colonne[2]?.trim().replace(/"/g, "");      // Colonna C: Titolo
+                    const img = colonne[6]?.trim();         // Colonna G: Link Immagine
+
+                    // Filtriamo per mostrare solo la serie selezionata
+                    if(serieFoglio === serieId) {
+                        trovati++;
                         container.innerHTML += `
-                            <div class="comic-card rounded-lg overflow-hidden shadow-2xl">
-                                <img src="${img}" alt="N.${numero}" class="w-full h-72 object-cover bg-slate-800" onerror="this.src='https://via.placeholder.com/300x400?text=Copertina+Non+Disponibile'">
-                                <div class="p-3">
-                                    <p class="text-sky-500 text-[10px] font-bold uppercase">Numero ${numero}</p>
-                                    <h3 class="serif-title text-lg leading-tight text-white">${titolo}</h3>
+                            <div class="comic-card rounded-xl overflow-hidden shadow-2xl flex flex-col">
+                                <div class="relative aspect-[2/3] overflow-hidden bg-slate-800">
+                                    <img src="${img}" 
+                                         alt="Dylan Dog ${numero}" 
+                                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Copertina+Non+Trovata';">
+                                </div>
+                                <div class="p-4 border-t border-slate-800 bg-slate-900/50">
+                                    <p class="text-sky-500 text-[10px] font-black uppercase tracking-tighter mb-1">N. ${numero}</p>
+                                    <h3 class="serif-title text-xl leading-tight text-white font-bold h-12 overflow-hidden">${titolo}</h3>
                                 </div>
                             </div>
                         `;
                     }
                 });
+
+                if(trovati === 0) {
+                    container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl italic">Nessun fumetto trovato per questa categoria.</div>`;
+                }
+
             } catch (error) {
-                console.error("Errore caricamento:", error);
+                console.error("Errore:", error);
+                document.getElementById('lista-fumetti').innerHTML = `<p class="text-red-500 col-span-full text-center font-bold">Errore di connessione al database di Safarà.</p>`;
             }
         }
 
