@@ -37,12 +37,19 @@
 
         <div class="h-px w-32 bg-slate-800 mx-auto mb-4"></div>
         <p class="serif-title italic text-slate-400 text-lg">"Ogni oggetto ha una storia, ogni fumetto un ricordo."</p>
+
+        <div class="mt-8">
+            <a href="statistiche.html" class="inline-flex items-center gap-3 px-8 py-3 border border-sky-500/30 rounded-full bg-sky-500/5 text-sky-400 hover:bg-sky-500 hover:text-white transition-all duration-300 group">
+                <span class="text-xs font-bold uppercase tracking-[0.3em]">Visualizza Statistiche Collezione</span>
+                <span class="text-xl group-hover:rotate-12 transition-transform">📊</span>
+            </a>
+        </div>
     </header>
 
     <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="menu-raccolte"></main>
 
     <script>
-        // Una sola dichiarazione pulita delle raccolte
+        // Definizione delle raccolte disponibili
         const raccolte = [
             { id: "dyd", nome: "Dylan Dog" },
             { id: "dyd-rist", nome: "Dylan Dog Ristampa" },
@@ -56,7 +63,7 @@
             { id: "simpsons", nome: "Simpsons Panini Comics" }
         ];
 
-        // Rendering del menu
+        // Creazione dinamica dei pulsanti del menu
         const menuContainer = document.getElementById('menu-raccolte');
         menuContainer.innerHTML = raccolte.map(r => `
             <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 flex flex-col justify-between h-48 group">
