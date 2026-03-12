@@ -3,33 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safarà | Registro</title>
+    <meta name="referrer" content="no-referrer">
+    <title>Safarà | Registro Serie</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #0b0f1a; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
+        body { background-color: #0b0f1a; color: #e2e8f0; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-row { background: #111827; border-left: 3px solid #1e293b; transition: all 0.2s ease; }
-        .comic-row:hover { border-left-color: #38bdf8; background: #161e2d; }
+        .table-row { border-bottom: 1px solid #1e293b; transition: background 0.2s; }
+        .table-row:hover { background: rgba(56, 189, 248, 0.03); }
+        .status-badge { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; padding: 2px 8px; border-radius: 4px; }
+        .owned { color: #38bdf8; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.2); }
+        .missing { color: #64748b; background: rgba(30, 41, 59, 0.5); border: 1px solid #1e293b; }
     </style>
 </head>
-<body class="p-6 md:p-12 text-center">
-
-    <header class="max-w-4xl mx-auto mb-16 border-b border-slate-800 pb-10">
-        <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-[0.3em] text-[10px] uppercase transition-colors">← Torna all'Archivio</a>
-        <h1 id="titolo-serie" class="serif-title text-6xl md:text-8xl text-white mt-6 italic uppercase tracking-tighter">Catalogo</h1>
-        <div id="btn-serie-generale" class="mt-8"></div>
-        <p class="text-slate-500 text-[10px] uppercase tracking-[0.5em] mt-8">Inventario Ufficiale Safarà</p>
+<body class="p-6 md:p-12">
+    <header class="max-w-5xl mx-auto mb-12">
+        <a href="index.html" class="text-sky-500 text-xs font-bold uppercase tracking-[0.3em] hover:text-white transition-colors">← Torna all'Archivio</a>
+        <h1 id="serie-title" class="serif-title text-5xl md:text-6xl text-white mt-6 italic">Caricamento...</h1>
+        <div class="h-px w-full bg-slate-800 mt-6"></div>
     </header>
 
-    <main id="lista-fumetti" class="max-w-3xl mx-auto space-y-4 text-left">
-        <div class="text-center py-20 text-slate-600 serif-title text-2xl animate-pulse italic">
-            Sincronizzando i volumi...
+    <main class="max-w-5xl mx-auto">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-slate-500 text-[10px] uppercase tracking-[0.2em] border-bottom border-slate-800">
+                        <th class="py-4 px-2">N°</th>
+                        <th class="py-4 px-2">Titolo Albo</th>
+                        <th class="py-4 px-2 text-right">Stato</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    </tbody>
+            </table>
         </div>
     </main>
 
     <script>
-        // --- CONFIGURAZIONE LINK CSV PER OGNI FOGLIO ---
         const CSV_LINKS = {
             "dyd": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=0&single=true&output=csv",
             "dyd-rist": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1422213309&single=true&output=csv",
@@ -43,82 +54,67 @@
             "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv"
         };
 
-        const dizionarioNomi = {
-            "dyd": "Dylan Dog", "dyd-rist": "Dylan Dog Ristampa", "dyd-book": "Dylan Dog Book",
-            "dyd-super": "Dylan Dog Super Book", "dyd-gig": "Dylan Dog Gigante",
-            "diab": "Diabolik", "diab-rist": "Diabolik Ristampa", "diab-ann": "Diabolik Annate","brendon": "Brendon", "simpsons": "I Simpsons"
+        const nomiSerie = {
+            "dyd": "Dylan Dog",
+            "dyd-rist": "Dylan Dog Ristampa",
+            "dyd-book": "Dylan Dog Collezione Book",
+            "dyd-super": "Dylan Dog Super Book",
+            "dyd-gig": "Dylan Dog Albo Gigante",
+            "diab": "Diabolik",
+            "diab-rist": "Diabolik Ristampa",
+            "diab-ann": "Diabolik Annate",
+            "brendon": "Brendon",
+            "simpsons": "Simpsons Panini Comics"
         };
 
-        const linksSerieGenerali = {
-            "dyd": "https://www.comics.org/series/3211/",
-            "dyd-rist": "https://www.comics.org/series/102898/",
-            "dyd-book": "https://www.comics.org/series/86765/",
-            "dyd-super": "https://www.comics.org/series/79808/",
-            "dyd-gig": "https://www.comics.org/series/79809/",
-            "diab": "https://www.comics.org/series/18176/",
-            "diab-rist": "https://www.comics.org/series/25401/",
-            "diab-ann": "https://www.comics.org/series/18176/",
-            "brendon": "https://www.comics.org/series/6049/"
-        };
-
-        function clean(str) { return str ? str.toString().toLowerCase().trim().replace(/["']/g, "") : ""; }
-
-        async function caricaDati() {
-            const params = new URLSearchParams(window.location.search);
-            const serieTarget = clean(params.get('serie'));
-            const csvUrl = CSV_LINKS[serieTarget]; // Seleziona il foglio giusto
-            
-            if (serieTarget) {
-                document.getElementById('titolo-serie').innerText = dizionarioNomi[serieTarget] || serieTarget.toUpperCase();
-                if (linksSerieGenerali[serieTarget]) {
-                    document.getElementById('btn-serie-generale').innerHTML = `<a href="${linksSerieGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/30 text-sky-400 px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all">Scheda Serie Generale ↗</a>`;
-                }
-            }
-
-            if (!csvUrl || csvUrl.startsWith("LINK_CSV")) {
-                document.getElementById('lista-fumetti').innerHTML = `<div class="text-center py-20 text-red-400 uppercase text-[10px] font-bold tracking-widest">Link CSV non configurato per questa serie.</div>`;
-                return;
-            }
-
-            try {
-                const response = await fetch(csvUrl);
-                const data = await response.text();
-                const righe = data.split(/\r?\n/).filter(line => line.trim().length > 0);
-                const container = document.getElementById('lista-fumetti');
-                
-                let html = "";
-                let trovati = 0;
-
-                for (let i = 1; i < righe.length; i++) {
-                    const col = righe[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    const numero = col[1];
-                    const titolo = col[2]?.replace(/["']/g, "") || "---";
-                    const posseduto = clean(col[3]);
-                    const prezzo = col[4] || "---";
-                    const condizione = col[5] || "---";
-
-                    // In questo caso il match sulla serie (col[0]) è opzionale perché il foglio è già specifico
-                    if (posseduto === "si" || posseduto === "sì" || posseduto === "x") {
-                        trovati++;
-                        html += `
-                            <div class="comic-row p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                                <div class="flex-grow">
-                                    <div class="flex items-baseline gap-4 mb-1">
-                                        <span class="text-sky-500 font-black text-xs">#${numero}</span>
-                                        <h3 class="serif-title text-2xl md:text-3xl text-slate-200 italic">${titolo}</h3>
-                                    </div>
-                                    <div class="flex gap-4 mt-2">
-                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500">Valore: <span class="text-slate-300">${prezzo}</span></div>
-                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500 border-l border-slate-800 pl-4">Stato: <span class="text-slate-300 italic">${condizione}</span></div>
-                                    </div>
-                                </div>
-                            </div>`;
-                    }
-                }
-                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-20 text-slate-500 italic">Nessun volume trovato.</div>`;
-            } catch (e) { container.innerHTML = "Errore caricamento dati."; }
+        // Funzione di pulizia testo identica alla Home
+        function cleanText(text) {
+            if (!text) return "---";
+            return text
+                .replace(/^["']|["']$/g, "") 
+                .replace(/""/g, '"')         
+                .replace(/[\u2018\u2019]/g, "'") 
+                .trim();
         }
-        caricaDati();
+
+        const params = new URLSearchParams(window.location.search);
+        const serieId = params.get('serie');
+
+        if (serieId && CSV_LINKS[serieId]) {
+            document.getElementById('serie-title').innerText = nomiSerie[serieId];
+            
+            fetch(CSV_LINKS[serieId])
+                .then(res => res.text())
+                .then(data => {
+                    const rows = data.split(/\r?\n/).slice(1);
+                    const tbody = document.getElementById('table-body');
+                    
+                    rows.forEach(row => {
+                        const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        if (col.length >= 3) {
+                            const numero = col[1];
+                            const titolo = cleanText(col[2]);
+                            const poss = col[3]?.toLowerCase().trim().replace(/["']/g, "");
+                            const isPosseduto = (poss === "si" || poss === "sì" || poss === "x");
+
+                            const tr = document.createElement('tr');
+                            tr.className = 'table-row';
+                            tr.innerHTML = `
+                                <td class="py-4 px-2 font-mono text-sky-500 text-sm">${numero}</td>
+                                <td class="py-4 px-2 serif-title text-lg ${isPosseduto ? 'text-white' : 'text-slate-500'}">${titolo}</td>
+                                <td class="py-4 px-2 text-right">
+                                    <span class="status-badge ${isPosseduto ? 'owned' : 'missing'}">
+                                        ${isPosseduto ? 'Posseduto' : 'Mancante'}
+                                    </span>
+                                </td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+                });
+        } else {
+            document.getElementById('serie-title').innerText = "Serie non trovata";
+        }
     </script>
 </body>
 </html>
