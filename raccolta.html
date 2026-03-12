@@ -24,7 +24,6 @@
 
     <header class="max-w-4xl mx-auto mb-16 border-b border-slate-800 pb-10 text-center">
         <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-[0.3em] text-[10px] uppercase transition-colors">← Torna all'Archivio</a>
-        
         <h1 id="titolo-serie" class="serif-title text-6xl md:text-8xl text-white mt-6 italic uppercase tracking-tighter">Catalogo</h1>
         
         <div id="btn-serie-generale" class="mt-6"></div>
@@ -55,7 +54,7 @@
 
         const linksSerieGenerali = {
             "dyd": "https://www.comics.org/series/3211/",
-            "dyd-rist": "https://www.comics.org/series/102898/",
+            "dyd-rist": "https://www.comics.org/series/102898/", // LINK CORRETTO
             "dyd-book": "https://www.comics.org/series/86765/",
             "dyd-super": "https://www.comics.org/series/79808/",
             "dyd-gig": "https://www.comics.org/series/79809/",
@@ -107,13 +106,18 @@
                 for (let i = 1; i < righe.length; i++) {
                     const colonne = splitCsvLine(righe[i]);
                     
-                    // Pulizia profonda per il match della serie
+                    // PULIZIA ESTREMA PER MATCH SICURO
                     const serieFoglio = colonne[0]?.toLowerCase().replace(/["']/g, "").trim();
                     const numero = colonne[1];
                     const titolo = colonne[2]?.replace(/^"|"$/g, '').trim() || "Senza Titolo";
                     const posseduto = colonne[3]?.toLowerCase().replace(/["']/g, "").trim();
-                    const prezzo = colonne[4] || "---";      // Colonna E
-                    const condizione = colonne[5] || "---";  // Colonna F
+                    const prezzo = colonne[4] || "---";
+                    const condizione = colonne[5] || "---";
+
+                    // Se vuoi controllare cosa legge lo script, apri la console (F12)
+                    if (serieFoglio === "dyd-rist") {
+                        console.log(`Riga ${i}: Serie=${serieFoglio}, Posseduto=${posseduto}`);
+                    }
 
                     if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
                         trovati++;
@@ -141,13 +145,12 @@
                     }
                 }
 
-                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-24 text-slate-500 serif-title text-2xl italic">Nessun volume trovato in archivio per questa sezione.</div>`;
+                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-24 text-slate-500 serif-title text-2xl italic">Nessun volume trovato per la sezione ${serieTarget}.</div>`;
 
             } catch (err) {
                 container.innerHTML = "<div class='text-center py-20 text-red-400 uppercase text-[10px] font-bold tracking-widest'>Errore di sincronizzazione dati.</div>";
             }
         }
-
         caricaDati();
     </script>
 </body>
