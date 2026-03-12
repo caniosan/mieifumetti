@@ -25,14 +25,14 @@
     <header class="max-w-4xl mx-auto mb-16 border-b border-slate-800 pb-10 text-center">
         <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-[0.3em] text-[10px] uppercase transition-colors">← Torna all'Archivio</a>
         
-        <h1 id="titolo-serie" class="serif-title text-6xl md:text-8xl text-white mt-6 italic uppercase tracking-tighter italic">Catalogo</h1>
+        <h1 id="titolo-serie" class="serif-title text-6xl md:text-8xl text-white mt-6 italic uppercase tracking-tighter">Catalogo</h1>
         
         <div id="btn-serie-generale" class="mt-6"></div>
         
         <p class="text-slate-500 text-[10px] uppercase tracking-[0.5em] mt-8">Inventario Ufficiale Safarà</p>
     </header>
 
-    <main id="lista-fumetti" class="max-w-3xl mx-auto space-y-3">
+    <main id="lista-fumetti" class="max-w-3xl mx-auto space-y-4">
         <div class="text-center py-20 text-slate-600 serif-title text-2xl animate-pulse italic">
             Sincronizzando i volumi...
         </div>
@@ -44,19 +44,24 @@
         const dizionarioNomi = {
             "dyd": "Dylan Dog",
             "dyd-rist": "Dylan Dog Ristampa",
-            "dyd-book": "Dylan Dog Book",
+            "dyd-book": "Dylan Dog Collezione Book",
+            "dyd-super": "Dylan Dog Super Book",
+            "dyd-gig": "Dylan Dog Albo Gigante",
             "diab": "Diabolik",
+            "diab-rist": "Diabolik Ristampa",
             "brendon": "Brendon",
             "simpsons": "I Simpsons"
         };
 
-        // Link fissi alle serie generali su Comics.org
         const linksSerieGenerali = {
             "dyd": "https://www.comics.org/series/3211/",
-            "dyd-rist": "https://www.comics.org/series/23117/",
-            "diab": "https://www.comics.org/series/10712/",
-            "brendon": "https://www.comics.org/series/20121/",
-            "simpsons": "https://www.comics.org/series/3211/"
+            "dyd-rist": "https://www.comics.org/series/102898/",
+            "dyd-book": "https://www.comics.org/series/86765/",
+            "dyd-super": "https://www.comics.org/series/79808/",
+            "dyd-gig": "https://www.comics.org/series/79809/",
+            "diab": "https://www.comics.org/series/18176/",
+            "diab-rist": "https://www.comics.org/series/25401/",
+            "brendon": "https://www.comics.org/series/6049/"
         };
 
         function splitCsvLine(line) {
@@ -81,8 +86,6 @@
             
             if (serieTarget) {
                 document.getElementById('titolo-serie').innerText = dizionarioNomi[serieTarget] || serieTarget.toUpperCase();
-                
-                // Inserisce il pulsante della serie se esiste il link
                 if (linksSerieGenerali[serieTarget]) {
                     document.getElementById('btn-serie-generale').innerHTML = `
                         <a href="${linksSerieGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/30 text-sky-400 px-8 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all shadow-[0_0_15px_rgba(56,189,248,0.1)]">
@@ -103,28 +106,42 @@
 
                 for (let i = 1; i < righe.length; i++) {
                     const colonne = splitCsvLine(righe[i]);
-                    const serieFoglio = colonne[0]?.toLowerCase().replace(/^"|"$/g, '').trim();
+                    
+                    // Pulizia profonda per il match della serie
+                    const serieFoglio = colonne[0]?.toLowerCase().replace(/["']/g, "").trim();
                     const numero = colonne[1];
                     const titolo = colonne[2]?.replace(/^"|"$/g, '').trim() || "Senza Titolo";
-                    const posseduto = colonne[3]?.toLowerCase().replace(/^"|"$/g, '').trim();
+                    const posseduto = colonne[3]?.toLowerCase().replace(/["']/g, "").trim();
+                    const prezzo = colonne[4] || "---";      // Colonna E
+                    const condizione = colonne[5] || "---";  // Colonna F
 
                     if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
                         trovati++;
                         html += `
-                            <div class="comic-row p-5 flex justify-between items-center group">
-                                <div class="flex items-baseline gap-6">
-                                    <span class="text-sky-500 font-black text-xs w-8 tracking-tighter">#${numero}</span>
-                                    <h3 class="serif-title text-2xl md:text-3xl text-slate-200 group-hover:text-white transition-colors leading-none tracking-tight italic">${titolo}</h3>
+                            <div class="comic-row p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div class="flex-grow">
+                                    <div class="flex items-baseline gap-4 mb-1">
+                                        <span class="text-sky-500 font-black text-xs tracking-tighter">#${numero}</span>
+                                        <h3 class="serif-title text-2xl md:text-3xl text-slate-200 leading-none tracking-tight italic">${titolo}</h3>
+                                    </div>
+                                    <div class="flex gap-4 mt-2">
+                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500">
+                                            Valore: <span class="text-slate-300">${prezzo}</span>
+                                        </div>
+                                        <div class="text-[9px] uppercase tracking-widest font-bold text-slate-500 border-l border-slate-800 pl-4">
+                                            Stato: <span class="text-slate-300 italic">${condizione}</span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="hidden md:block">
-                                    <span class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">Archiviato</span>
+                                    <span class="text-[8px] text-slate-700 font-bold uppercase tracking-[0.3em] border border-slate-800 px-3 py-1 rounded">Archiviato</span>
                                 </div>
                             </div>
                         `;
                     }
                 }
 
-                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-24 text-slate-500 serif-title text-2xl italic">Nessun volume trovato per ${serieTarget}.</div>`;
+                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-24 text-slate-500 serif-title text-2xl italic">Nessun volume trovato in archivio per questa sezione.</div>`;
 
             } catch (err) {
                 container.innerHTML = "<div class='text-center py-20 text-red-400 uppercase text-[10px] font-bold tracking-widest'>Errore di sincronizzazione dati.</div>";
