@@ -3,33 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="no-referrer">
-    <title>Safarà | Archivio</title>
+    <title>Safarà | Registro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; font-family: ui-sans-serif, system-ui, sans-serif; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-card { 
+        .comic-row { 
             transition: all 0.3s ease; 
             background: #111827; 
             border: 1px solid #1e293b; 
         }
-        .comic-card:hover { border-color: #38bdf8; transform: translateY(-5px); box-shadow: 0 10px 20px -5px rgba(0,0,0,0.5); }
+        .comic-row:hover { border-color: #38bdf8; background: #161e2d; transform: translateX(5px); }
     </style>
 </head>
 <body class="p-4 md:p-10">
-    <header class="max-w-7xl mx-auto mb-10 border-b border-slate-800 pb-6">
-        <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
-        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic uppercase tracking-tighter">Archivio</h1>
+    <header class="max-w-5xl mx-auto mb-12 border-b border-slate-800 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+        <div>
+            <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-[10px] uppercase transition-colors">← Torna alla Home</a>
+            <h1 id="titolo-serie" class="serif-title text-5xl md:text-7xl text-white mt-4 italic uppercase tracking-tighter">Registro</h1>
+        </div>
+        <div id="btn-serie-generale"></div>
     </header>
 
-    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        <div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl italic animate-pulse">Consultando i registri di Safarà...</div>
+    <main id="lista-fumetti" class="max-w-5xl mx-auto space-y-4">
+        <div class="text-center py-20 text-slate-500 serif-title text-2xl animate-pulse italic">Consultando i registri di Safarà...</div>
     </main>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
+
+        // Configura qui i link generali delle serie su Comics.org
+        const linksSerieGenerali = {
+            "dyd": "https://www.comics.org/series/3211/",
+            "diab": "https://www.comics.org/series/10712/",
+            "brendon": "https://www.comics.org/series/20121/"
+        };
 
         function splitCsvLine(line) {
             const parts = [];
@@ -51,6 +60,14 @@
             const params = new URLSearchParams(window.location.search);
             const serieTarget = params.get('serie')?.toLowerCase();
             
+            if (serieTarget && linksSerieGenerali[serieTarget]) {
+                document.getElementById('btn-serie-generale').innerHTML = `
+                    <a href="${linksSerieGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/30 text-sky-400 px-6 py-2 rounded-full text-[9px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all">
+                        Scheda Serie ↗
+                    </a>
+                `;
+            }
+
             try {
                 const response = await fetch(CSV_URL);
                 const data = await response.text();
@@ -62,54 +79,42 @@
 
                 for (let i = 1; i < righe.length; i++) {
                     const colonne = splitCsvLine(righe[i]);
-                    
-                    const serieFoglio = colonne[0]?.toLowerCase(); // A: ID Serie
-                    const numero = colonne[1];                   // B: Numero
-                    const titolo = colonne[2]?.replace(/^"|"$/g, '') || "Senza Titolo"; // C: Titolo
-                    // --- LOGICA FILTRO POSSEDUTI (Colonna D) ---
-                    const posseduto = colonne[3]?.toLowerCase().trim(); // D: Posseduto
-                    
-                    const prezzo = colonne[4] || "---";          // E: Prezzo
-                    const condizione = colonne[5] || "---";      // F: Condizione
-                    const img = colonne[6];                      // G: Immagine
+                    const serieFoglio = colonne[0]?.toLowerCase();
+                    const numero = colonne[1];
+                    const titolo = colonne[2]?.replace(/^"|"$/g, '') || "Senza Titolo";
+                    const posseduto = colonne[3]?.toLowerCase().trim();
+                    const prezzo = colonne[4] || "---";
+                    const condizione = colonne[5] || "---";
+                    // COLONNA H (indice 7) per il link dinamico
+                    const linkDinamico = colonne[7] || "#"; 
 
-                    // Mostra l'albo solo se:
-                    // 1. La serie corrisponde (es. dyd)
-                    // 2. Nella colonna D c'è scritto 'si', 'sì' oppure 'x'
                     if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
                         trovati++;
                         html += `
-                            <div class="comic-card rounded-xl overflow-hidden flex flex-col h-full shadow-2xl">
-                                <div class="aspect-[2/3] bg-slate-800 overflow-hidden relative">
-                                    <img src="${img}" 
-                                         referrerpolicy="no-referrer"
-                                         class="w-full h-full object-cover" 
-                                         onerror="this.onerror=null; this.src='https://via.placeholder.com/300x450/1e293b/38bdf8?text=N.+${numero}';">
-                                    <div class="absolute top-2 right-2">
-                                        <span class="bg-black/60 backdrop-blur-md text-[9px] px-2 py-1 rounded border border-white/20 text-white font-bold uppercase tracking-widest">${condizione}</span>
+                            <div class="comic-row p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+                                <div class="flex-grow">
+                                    <div class="flex items-center gap-4 mb-1">
+                                        <span class="text-sky-500 text-[10px] font-black uppercase tracking-widest italic">N. ${numero}</span>
+                                        <span class="text-slate-600 text-[9px] uppercase font-bold tracking-widest">${condizione}</span>
                                     </div>
+                                    <h3 class="serif-title text-3xl text-white font-bold leading-tight italic">${titolo}</h3>
+                                    <p class="text-slate-500 text-[10px] mt-2 uppercase tracking-widest">Stima Valore: <span class="text-white">${prezzo}</span></p>
                                 </div>
-                                <div class="p-4 bg-slate-900/40 flex-grow flex flex-col justify-between">
-                                    <div>
-                                        <p class="text-sky-500 text-[10px] font-black uppercase tracking-widest mb-1">Albo N. ${numero}</p>
-                                        <h3 class="serif-title text-xl text-white font-bold leading-tight mb-4">${titolo}</h3>
-                                    </div>
-                                    <div class="pt-3 border-t border-slate-800/50 flex justify-between items-center">
-                                        <span class="text-[9px] text-slate-500 uppercase font-black tracking-widest">Valore stima</span>
-                                        <span class="text-sky-400 font-bold text-sm">${prezzo}</span>
-                                    </div>
+                                <div class="w-full md:w-auto text-right">
+                                    <a href="${linkDinamico}" target="_blank" class="inline-block w-full md:w-auto px-8 py-3 bg-slate-900 border border-slate-700 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] hover:border-sky-500 hover:text-sky-400 transition-all text-center">
+                                        Vedi Scheda ↗
+                                    </a>
                                 </div>
                             </div>
                         `;
                     }
                 }
 
-                container.innerHTML = trovati > 0 ? html : `<div class="col-span-full text-center py-20 text-slate-500 italic serif-title text-2xl text-center px-6">Non ci sono ancora volumi di questa serie nella tua collezione di Safarà.</div>`;
+                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-20 text-slate-500 italic serif-title text-2xl">Archivio vuoto per questa serie.</div>`;
                 if(serieTarget) document.getElementById('titolo-serie').innerText = serieTarget.replace(/-/g, ' ');
 
             } catch (err) {
-                console.error(err);
-                container.innerHTML = "<p class='col-span-full text-center text-red-400 font-bold'>Errore di sincronizzazione con il database.</p>";
+                container.innerHTML = "Errore di caricamento.";
             }
         }
         caricaDati();
