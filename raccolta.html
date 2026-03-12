@@ -10,82 +10,75 @@
     <style>
         body { background-color: #0b0f1a; color: #e2e8f0; }
         .serif-title { font-family: 'Cormorant Garamond', serif; }
-        .comic-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: #111827; border: 1px solid #1e293b; }
-        .comic-card:hover { transform: translateY(-10px); border-color: #38bdf8; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+        .comic-card { transition: all 0.3s ease; background: #111827; border: 1px solid #1e293b; height: 100%; }
+        .comic-card:hover { transform: translateY(-5px); border-color: #38bdf8; }
     </style>
 </head>
 <body class="p-4 md:p-10">
-    <header class="max-w-7xl mx-auto mb-10 flex justify-between items-end border-b border-slate-800 pb-6">
-        <div>
-            <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
-            <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Archivio</h1>
-        </div>
-        <div class="text-right hidden md:block">
-            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-[0.3em]">Safarà • Database</p>
-        </div>
+    <header class="max-w-7xl mx-auto mb-10">
+        <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna alla Home</a>
+        <h1 id="titolo-serie" class="serif-title text-5xl md:text-6xl text-white mt-4 italic">Archivio</h1>
     </header>
 
-    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-        <div class="col-span-full text-center py-20">
-            <p class="serif-title text-2xl italic text-slate-500 animate-pulse">Consultando gli archivi di Safarà...</p>
+    <main id="lista-fumetti" class="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        <div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl animate-pulse">
+            Caricamento dati dal database...
         </div>
     </main>
 
     <script>
-        // Il tuo link CSV fornito
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
 
         async function caricaDati() {
             const params = new URLSearchParams(window.location.search);
-            const serieId = params.get('serie'); // Es: dyd, diab...
+            const serieTarget = params.get('serie'); // es: dyd
             
             try {
                 const response = await fetch(CSV_URL);
-                const data = await response.text();
+                const text = await response.text();
                 
-                // Dividiamo per righe e puliamo da eventuali ritorni a capo strani
-                const righe = data.split(/\r?\n/).slice(1); 
+                // Pulizia righe
+                const righe = text.split(/\r?\n/).filter(r => r.trim() !== "");
                 const container = document.getElementById('lista-fumetti');
                 container.innerHTML = "";
 
-                let trovati = 0;
+                let contatore = 0;
 
-                righe.forEach(riga => {
-                    // Usiamo una regex per gestire eventuali virgole dentro i titoli
-                    const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                // Partiamo da 1 per saltare l'intestazione
+                for (let i = 1; i < righe.length; i++) {
+                    // Questa regex gestisce correttamente le virgole dentro i campi tra virgolette
+                    const colonne = righe[i].match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || righe[i].split(',');
                     
-                    const serieFoglio = colonne[0]?.trim(); // Colonna A: ID Serie
-                    const numero = colonne[1]?.trim();      // Colonna B: Numero
-                    const titolo = colonne[2]?.trim().replace(/"/g, "");      // Colonna C: Titolo
-                    const img = colonne[6]?.trim();         // Colonna G: Link Immagine
+                    const serieOriginale = colonne[0]?.replace(/"/g, "").trim();
+                    const numero = colonne[1]?.replace(/"/g, "").trim();
+                    const titolo = colonne[2]?.replace(/"/g, "").trim();
+                    const img = colonne[6]?.replace(/"/g, "").trim(); // Colonna G
 
-                    // Filtriamo per mostrare solo la serie selezionata
-                    if(serieFoglio === serieId) {
-                        trovati++;
+                    if (serieOriginale === serieTarget) {
+                        contatore++;
                         container.innerHTML += `
-                            <div class="comic-card rounded-xl overflow-hidden shadow-2xl flex flex-col">
-                                <div class="relative aspect-[2/3] overflow-hidden bg-slate-800">
+                            <div class="comic-card rounded-lg overflow-hidden flex flex-col shadow-xl">
+                                <div class="aspect-[2/3] bg-slate-800 overflow-hidden">
                                     <img src="${img}" 
-                                         alt="Dylan Dog ${numero}" 
-                                         class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                                         onerror="this.onerror=null;this.src='https://via.placeholder.com/400x600?text=Copertina+Non+Trovata';">
+                                         class="w-full h-full object-cover" 
+                                         onerror="this.src='https://via.placeholder.com/300x450/1e293b/38bdf8?text=N.+${numero}';">
                                 </div>
-                                <div class="p-4 border-t border-slate-800 bg-slate-900/50">
-                                    <p class="text-sky-500 text-[10px] font-black uppercase tracking-tighter mb-1">N. ${numero}</p>
-                                    <h3 class="serif-title text-xl leading-tight text-white font-bold h-12 overflow-hidden">${titolo}</h3>
+                                <div class="p-3 bg-slate-900/80 flex-grow">
+                                    <p class="text-sky-500 text-[10px] font-bold uppercase tracking-widest">N. ${numero}</p>
+                                    <h3 class="serif-title text-lg leading-tight text-white">${titolo}</h3>
                                 </div>
                             </div>
                         `;
                     }
-                });
-
-                if(trovati === 0) {
-                    container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 serif-title text-2xl italic">Nessun fumetto trovato per questa categoria.</div>`;
                 }
 
-            } catch (error) {
-                console.error("Errore:", error);
-                document.getElementById('lista-fumetti').innerHTML = `<p class="text-red-500 col-span-full text-center font-bold">Errore di connessione al database di Safarà.</p>`;
+                if (contatore === 0) {
+                    container.innerHTML = `<div class="col-span-full text-center py-10">Nessun fumetto trovato per la serie: ${serieTarget}</div>`;
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('lista-fumetti').innerHTML = "Errore nel caricamento del database.";
             }
         }
 
