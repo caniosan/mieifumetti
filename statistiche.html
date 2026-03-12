@@ -15,12 +15,10 @@
             border: 1px solid #1e293b; 
             transition: all 0.3s ease; 
             position: relative;
-            overflow: hidden;
         }
         .stat-card:hover { border-color: #38bdf8; transform: translateY(-5px); }
         .progress-bar { height: 6px; background: #1e293b; border-radius: 10px; overflow: hidden; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 1.5s ease-in-out; }
-        .glass-header { background: rgba(17, 24, 39, 0.8); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="p-6 md:p-12">
@@ -32,7 +30,7 @@
                     ← Torna all'Archivio
                 </a>
                 <h1 class="serif-title text-6xl md:text-7xl text-white mt-4 italic tracking-tight">Statistiche</h1>
-                <p class="text-slate-500 text-sm mt-2 italic">Il resoconto dettagliato degli oggetti custoditi a Safarà.</p>
+                <p class="text-slate-500 text-sm mt-2 italic">Il resoconto dei volumi custoditi a Safarà.</p>
             </div>
             
             <div id="total-container" class="hidden">
@@ -52,10 +50,6 @@
             </div>
         </div>
     </main>
-
-    <footer class="max-w-6xl mx-auto mt-20 pt-8 border-t border-slate-900 text-center">
-        <p class="text-slate-600 text-[9px] uppercase tracking-[0.5em]">Safarà Archivio Digitale • 2026</p>
-    </footer>
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
@@ -83,34 +77,29 @@
                 let totaleGenerale = 0;
 
                 righe.forEach(riga => {
+                    // Gestione avanzata CSV per titoli con virgole
                     const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
                     
                     const idSerie = colonne[0]?.replace(/"/g, "").trim();
-                    // Assumiamo che "Posseduto" sia la Colonna E (indice 4)
-                    const posseduto = colonne[4]?.replace(/"/g, "").trim().toLowerCase(); 
+                    // --- MODIFICA QUI: INDICE 3 PER COLONNA D ---
+                    const posseduto = colonne[3]?.replace(/"/g, "").trim().toLowerCase(); 
 
-                    // Conta solo se l'ID serie è valido E il valore è "si", "sì" o "x"
                     if (idSerie && nomiSerie[idSerie] && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
                         stats[idSerie] = (stats[idSerie] || 0) + 1;
                         totaleGenerale++;
                     }
                 });
 
-                // Aggiorna contatore totale in alto
                 document.getElementById('counter-totale').innerText = totaleGenerale;
                 document.getElementById('total-container').classList.remove('hidden');
 
                 const container = document.getElementById('stats-grid');
                 container.innerHTML = "";
 
-                // Ordiniamo le serie per numero di albi (dalla più numerosa)
                 const serieOrdinate = Object.keys(stats).sort((a,b) => stats[b] - stats[a]);
 
                 if (serieOrdinate.length === 0) {
-                    container.innerHTML = `
-                        <div class="col-span-full bg-slate-900/50 p-12 rounded-3xl text-center border border-dashed border-slate-800">
-                            <p class="serif-title text-2xl italic text-slate-500">Nessun fumetto segnato come posseduto nel database.</p>
-                        </div>`;
+                    container.innerHTML = `<div class="col-span-full text-center py-20 text-slate-500 italic">Nessun fumetto segnato come posseduto (Colonna D).</div>`;
                     return;
                 }
 
@@ -121,40 +110,25 @@
                     container.innerHTML += `
                         <div class="stat-card p-8 rounded-3xl shadow-2xl">
                             <div class="flex justify-between items-start mb-6">
-                                <div>
-                                    <h3 class="serif-title text-3xl text-white italic">${nomiSerie[id]}</h3>
-                                    <p class="text-sky-500 text-[9px] font-bold uppercase tracking-widest mt-1">Serie Certificata</p>
-                                </div>
+                                <h3 class="serif-title text-3xl text-white italic">${nomiSerie[id]}</h3>
                                 <span class="text-slate-700 font-black text-2xl">#${serieOrdinate.indexOf(id) + 1}</span>
                             </div>
-
                             <div class="flex items-end gap-2 mb-6">
                                 <span class="text-6xl font-black text-white tracking-tighter">${quantita}</span>
                                 <span class="text-slate-500 text-xs font-bold uppercase pb-2 tracking-widest">Albi</span>
                             </div>
-
                             <div class="space-y-2">
-                                <div class="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                                    <span>Incidenza Collezione</span>
-                                    <span class="text-sky-400">${percentuale}%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: ${percentuale}%"></div>
-                                </div>
+                                <div class="progress-bar"><div class="progress-fill" style="width: ${percentuale}%"></div></div>
+                                <p class="text-[10px] font-bold text-sky-400 uppercase tracking-widest text-right">${percentuale}% del totale</p>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                 });
 
             } catch (err) {
                 console.error(err);
-                document.getElementById('stats-grid').innerHTML = `
-                    <div class="col-span-full text-center text-red-400 font-bold p-10 bg-red-400/5 border border-red-400/20 rounded-2xl">
-                        Errore critico durante la lettura degli archivi. Controlla il link del Foglio Google.
-                    </div>`;
+                document.getElementById('stats-grid').innerHTML = "Errore di connessione al database.";
             }
         }
-
         generaStatistiche();
     </script>
 </body>
