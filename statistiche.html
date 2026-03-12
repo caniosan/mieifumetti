@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safarà | Statistiche Archivio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0b0f1a; color: #e2e8f0; }
+        .serif-title { font-family: 'Cormorant Garamond', serif; }
+        .stat-card { background: #111827; border: 1px solid #1e293b; transition: all 0.3s ease; }
+        .stat-card:hover { border-color: #38bdf8; transform: translateY(-3px); }
+        .progress-bar { height: 8px; background: #1e293b; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #0ea5e9, #2563eb); transition: width 1s ease-out; }
+    </style>
+</head>
+<body class="p-6 md:p-12">
+    <header class="max-w-5xl mx-auto mb-12 flex justify-between items-center">
+        <div>
+            <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-xs uppercase transition-colors">← Torna all'Archivio</a>
+            <h1 class="serif-title text-5xl text-white mt-2 italic">Statistiche Safarà</h1>
+        </div>
+        <div id="total-badge" class="bg-sky-500/10 border border-sky-500/20 px-6 py-3 rounded-full hidden">
+            <span class="text-sky-400 text-sm font-bold uppercase tracking-widest">Totale Albi: </span>
+            <span id="counter-totale" class="text-white text-2xl font-black ml-2">0</span>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto">
+        <div id="stats-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="col-span-full text-center py-20 animate-pulse text-slate-500 serif-title text-2xl">
+                Analizzando i registri di Safarà...
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
+
+        // Mappa dei nomi reali per gli ID
+        const nomiSerie = {
+            "dyd": "Dylan Dog",
+            "dyd-rist": "Dylan Dog Ristampa",
+            "dyd-book": "Dylan Dog Book",
+            "dyd-super": "Dylan Dog Super Book",
+            "dyd-gig": "Dylan Dog Gigante",
+            "diab": "Diabolik",
+            "diab-rist": "Diabolik Ristampa",
+            "diab-ann": "Diabolik Annate",
+            "brendon": "Brendon",
+            "simpsons": "I Simpsons"
+        };
+
+        async function generaStatistiche() {
+            try {
+                const response = await fetch(CSV_URL);
+                const text = await response.text();
+                const righe = text.split(/\r?\n/).filter(r => r.trim() !== "").slice(1);
+                
+                let stats = {};
+                let totaleGenerale = 0;
+
+                righe.forEach(riga => {
+                    const colonne = riga.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const idSerie = colonne[0]?.replace(/"/g, "").trim();
+                    
+                    if (idSerie && nomiSerie[idSerie]) {
+                        stats[idSerie] = (stats[idSerie] || 0) + 1;
+                        totaleGenerale++;
+                    }
+                });
+
+                document.getElementById('counter-totale').innerText = totaleGenerale;
+                document.getElementById('total-badge').classList.remove('hidden');
+
+                const container = document.getElementById('stats-grid');
+                container.innerHTML = "";
+
+                // Creazione Card per ogni serie
+                Object.keys(stats).sort((a,b) => stats[b] - stats[a]).forEach(id => {
+                    const quantita = stats[id];
+                    const percentuale = ((quantita / totaleGenerale) * 100).toFixed(1);
+
+                    container.innerHTML += `
+                        <div class="stat-card p-6 rounded-2xl shadow-xl">
+                            <div class="flex justify-between items-start mb-4">
+                                <h3 class="serif-title text-2xl text-white italic leading-tight">${nomiSerie[id]}</h3>
+                                <span class="bg-sky-500/20 text-sky-400 text-xs font-bold px-2 py-1 rounded">${percentuale}%</span>
+                            </div>
+                            <div class="flex items-baseline gap-2 mb-4">
+                                <span class="text-4xl font-black text-white">${quantita}</span>
+                                <span class="text-slate-500 text-xs uppercase font-bold tracking-tighter">Albi posseduti</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${percentuale}%"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('stats-grid').innerHTML = "<p class='text-red-500'>Errore nel calcolo delle statistiche.</p>";
+            }
+        }
+
+        generaStatistiche();
+    </script>
+</body>
+</html>
