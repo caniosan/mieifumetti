@@ -75,20 +75,6 @@
 
     <main class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="menu-raccolte"></main>
 
-    <script>
-        const raccolte = [
-            { id: "dyd", nome: "Dylan Dog" },
-            { id: "dyd-rist", nome: "Dylan Dog Ristampa" },
-            { id: "dyd-book", nome: "Dylan Dog Collezione Book" },
-            { id: "dyd-super", nome: "Dylan Dog Super Book" },
-            { id: "dyd-gig", nome: "Dylan Dog Albo Gigante" },
-            { id: "diab", nome: "Diabolik" },
-            { id: "diab-rist", nome: "Diabolik Ristampe" },
-            { id: "diab-ann", nome: "Diabolik Annate" },
-            { id: "brendon", nome: "Brendon" },
-            { id: "simpsons", nome: "Simpsons Panini Comics" }
-        ];
-
         document.getElementById('menu-raccolte').innerHTML = raccolte.map(r => `
             <a href="raccolta.html?serie=${r.id}" class="collection-card p-8 rounded-2xl flex flex-col justify-between h-48 group">
                 <h2 class="text-xl font-black uppercase italic group-hover:text-sky-400 transition-colors">${r.nome}</h2>
