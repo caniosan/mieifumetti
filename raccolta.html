@@ -18,9 +18,10 @@
     <header class="max-w-5xl mx-auto mb-12 border-b border-slate-800 pb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
         <div>
             <a href="index.html" class="text-sky-500 hover:text-sky-400 font-bold tracking-widest text-[10px] uppercase transition-colors">← Torna alla Home</a>
-            <h1 id="titolo-serie" class="serif-title text-5xl md:text-7xl text-white mt-4 italic uppercase tracking-tighter">Registro</h1>
+            <h1 id="titolo-serie" class="serif-title text-5xl md:text-7xl text-white mt-4 italic uppercase tracking-tighter">Caricamento...</h1>
         </div>
-        <div class="text-right hidden md:block italic serif-title text-sky-500 text-xl">Safarà Antichità</div>
+        
+        <div id="btn-serie-generale"></div>
     </header>
 
     <main id="lista-fumetti" class="max-w-5xl mx-auto space-y-4">
@@ -29,6 +30,27 @@
 
     <script>
         const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?output=csv";
+
+        // Mappa dei link alle serie generali (Aggiungi qui gli altri se necessario)
+        const linksGenerali = {
+            "dyd": "https://www.comics.org/series/3211/",
+            "dyd-rist": "https://www.comics.org/series/23117/",
+            "diab": "https://www.comics.org/series/10712/",
+            "brendon": "https://www.comics.org/series/20121/",
+            "simpsons": "https://www.comics.org/series/3211/"
+        };
+
+        // Mappa per i nomi "belli" da visualizzare al posto delle sigle
+        const nomiPuliti = {
+            "dyd": "Dylan Dog",
+            "dyd-rist": "Dylan Dog Ristampa",
+            "dyd-book": "Dylan Dog Book",
+            "dyd-super": "Dylan Dog Super Book",
+            "dyd-gig": "Dylan Dog Gigante",
+            "diab": "Diabolik",
+            "brendon": "Brendon",
+            "simpsons": "I Simpsons"
+        };
 
         function splitCsvLine(line) {
             const parts = [];
@@ -50,6 +72,19 @@
             const params = new URLSearchParams(window.location.search);
             const serieTarget = params.get('serie')?.toLowerCase();
             
+            // 1. Imposta il Titolo Pulito e il Tasto Generale
+            if (serieTarget) {
+                document.getElementById('titolo-serie').innerText = nomiPuliti[serieTarget] || serieTarget.toUpperCase();
+                
+                if (linksGenerali[serieTarget]) {
+                    document.getElementById('btn-serie-generale').innerHTML = `
+                        <a href="${linksGenerali[serieTarget]}" target="_blank" class="inline-block border border-sky-500/40 text-sky-400 px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-sky-500 hover:text-white transition-all">
+                            Scheda Serie Generale ↗
+                        </a>
+                    `;
+                }
+            }
+
             try {
                 const response = await fetch(CSV_URL);
                 const data = await response.text();
@@ -63,13 +98,11 @@
                     const colonne = splitCsvLine(righe[i]);
                     const serieFoglio = colonne[0]?.toLowerCase();
                     const numero = colonne[1];
-                    const titolo = colonne[2]?.replace(/^"|"$/g, '') || "";
+                    const titolo = colonne[2]?.replace(/^"|"$/g, '') || "Senza Titolo";
                     const posseduto = colonne[3]?.toLowerCase().trim();
                     const prezzo = colonne[4] || "---";
                     const condizione = colonne[5] || "---";
 
-                    // CREAZIONE LINK DI RICERCA AUTOMATICO
-                    // Usiamo il titolo per generare la ricerca su Comics.org
                     const urlRicerca = `https://www.comics.org/search/advanced/process/?target=issue&title=${encodeURIComponent(titolo)}`;
 
                     if (serieFoglio === serieTarget && (posseduto === "si" || posseduto === "sì" || posseduto === "x")) {
@@ -78,10 +111,10 @@
                             <div class="comic-row p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6">
                                 <div class="flex-grow">
                                     <div class="flex items-center gap-4 mb-2">
-                                        <span class="bg-sky-500/10 text-sky-500 text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/20 uppercase">N. ${numero}</span>
+                                        <span class="bg-sky-500/10 text-sky-500 text-[10px] font-black px-3 py-1 rounded-full border border-sky-500/20 uppercase tracking-widest">Albo N. ${numero}</span>
                                         <span class="text-slate-500 text-[10px] uppercase font-bold tracking-widest italic">${condizione}</span>
                                     </div>
-                                    <h3 class="serif-title text-3xl md:text-4xl text-white font-bold italic">${titolo}</h3>
+                                    <h3 class="serif-title text-3xl md:text-4xl text-white font-bold leading-tight italic">${titolo}</h3>
                                     <p class="text-slate-500 text-[10px] mt-2 uppercase tracking-widest font-bold">Valore: <span class="text-white">${prezzo}</span></p>
                                 </div>
                                 <div class="w-full md:w-auto">
@@ -94,11 +127,10 @@
                     }
                 }
 
-                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-20 text-slate-500 serif-title text-2xl italic">Nessun albo in archivio.</div>`;
-                if(serieTarget) document.getElementById('titolo-serie').innerText = serieTarget.replace(/-/g, ' ');
+                container.innerHTML = trovati > 0 ? html : `<div class="text-center py-20 text-slate-500 serif-title text-2xl italic">Nessun albo catalogato.</div>`;
 
             } catch (err) {
-                container.innerHTML = "<p class='text-center text-red-400'>Errore di connessione.</p>";
+                container.innerHTML = "<p class='text-center text-red-400'>Errore di caricamento.</p>";
             }
         }
         caricaDati();
