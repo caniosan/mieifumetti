@@ -18,7 +18,12 @@
 <body class="p-6 md:p-12">
     <header class="max-w-6xl mx-auto mb-12">
         <a href="index.html" class="text-sky-500 text-xs font-bold uppercase tracking-[0.3em] hover:text-white transition-colors">← Torna all'Archivio</a>
-        <h1 id="serie-title" class="serif-title text-5xl md:text-6xl text-white mt-6 italic">Caricamento...</h1>
+        
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mt-6">
+            <h1 id="serie-title" class="serif-title text-5xl md:text-6xl text-white italic">Caricamento...</h1>
+            <div id="external-link-container"></div>
+        </div>
+
         <div class="h-px w-full bg-slate-800 mt-6"></div>
     </header>
 
@@ -60,6 +65,19 @@
             "brendon": "Brendon", "simpsons": "Simpsons Panini Comics"
         };
 
+        const COMICS_ORG_LINKS = {
+            "dyd": "https://www.comics.org/series/3211/",
+            "dyd-rist": "https://www.comics.org/series/102898/",
+            "dyd-book": "https://www.comics.org/series/86765/",
+            "dyd-super": "https://www.comics.org/series/79808/",
+            "dyd-gig": "https://www.comics.org/series/79809/",
+            "diab": "https://www.comics.org/series/18176/",
+            "diab-sw": "https://www.comics.org/series/31125/",
+            "diab-ann": "https://www.comics.org/series/18176/",
+            "brendon": "https://www.comics.org/series/6049/",
+            "simpsons": "https://www.comicsbox.it/serie/ISPNMN"
+        };
+
         function cleanText(text) {
             if (!text) return "---";
             return text.replace(/^["']|["']$/g, "").replace(/""/g, '"').replace(/[\u2018\u2019]/g, "'").trim();
@@ -70,6 +88,17 @@
 
         if (serieId && CSV_LINKS[serieId]) {
             document.getElementById('serie-title').innerText = nomiSerie[serieId];
+
+            // Inserimento dinamico del tasto catalogo
+            if (COMICS_ORG_LINKS[serieId]) {
+                document.getElementById('external-link-container').innerHTML = `
+                    <a href="${COMICS_ORG_LINKS[serieId]}" target="_blank" 
+                       class="inline-flex items-center px-4 py-2 border border-slate-700 rounded-lg text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:border-sky-500 hover:text-sky-400 transition-all bg-slate-900/40">
+                        Catalogo Generale ↗
+                    </a>
+                `;
+            }
+
             fetch(CSV_LINKS[serieId])
                 .then(res => res.text())
                 .then(data => {
