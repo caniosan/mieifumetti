@@ -31,13 +31,13 @@
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="text-slate-500 text-[10px] uppercase tracking-[0.2em] border-b border-slate-800">
+                    <tr id="table-header-row" class="text-slate-500 text-[10px] uppercase tracking-[0.2em] border-b border-slate-800">
                         <th class="py-4 px-2">N°</th>
                         <th class="py-4 px-2">Titolo Albo</th>
                         <th class="py-4 px-2">Stato</th>
                         <th class="py-4 px-2">Prezzo</th>
                         <th class="py-4 px-2">Condizione</th>
-                    </tr>
+                        </tr>
                 </thead>
                 <tbody id="table-body"></tbody>
             </table>
@@ -55,14 +55,16 @@
             "diab-sw": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv",
             "diab-ann": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv",
             "brendon": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv",
-            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv"
+            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv",
+            "banco-unici": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=922417261&single=true&output=csv"
         };
 
         const nomiSerie = {
             "dyd": "Dylan Dog", "dyd-rist": "Dylan Dog Ristampa", "dyd-book": "Dylan Dog Collezione Book",
             "dyd-super": "Dylan Dog Super Book", "dyd-gig": "Dylan Dog Albo Gigante",
             "diab": "Diabolik", "diab-sw": "Diabolik Swiisss (Seconda Ristampa)", "diab-ann": "Diabolik Annate",
-            "brendon": "Brendon", "simpsons": "Simpsons Panini Comics"
+            "brendon": "Brendon", "simpsons": "Simpsons Panini Comics",
+            "banco-unici": "Il Banco degli Unici"
         };
 
         const COMICS_ORG_LINKS = {
@@ -89,7 +91,16 @@
         if (serieId && CSV_LINKS[serieId]) {
             document.getElementById('serie-title').innerText = nomiSerie[serieId];
 
-            // Inserimento dinamico del tasto catalogo
+            // Aggiunta testata Link se è il Banco degli Unici
+            if (serieId === "banco-unici") {
+                const headerRow = document.getElementById('table-header-row');
+                const th = document.createElement('th');
+                th.className = "py-4 px-2";
+                th.innerText = "LINK";
+                headerRow.appendChild(th);
+            }
+
+            // Inserimento dinamico del tasto catalogo generale (se esiste)
             if (COMICS_ORG_LINKS[serieId]) {
                 document.getElementById('external-link-container').innerHTML = `
                     <a href="${COMICS_ORG_LINKS[serieId]}" target="_blank" 
@@ -104,19 +115,53 @@
                 .then(data => {
                     const rows = data.split(/\r?\n/).slice(1);
                     const tbody = document.getElementById('table-body');
+                    
                     rows.forEach(row => {
                         const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                        const poss = col[3]?.toLowerCase().trim().replace(/["']/g, "");
+                        
+                        let num, tit, poss, prezzo, cond, link;
+
+                        if (serieId === "banco-unici") {
+                            // Struttura: serie(0), raccolta(1), numero(2), titolo(3), posseduto(4), prezzo(5), condizione(6), link(7)
+                            num = col[2];
+                            tit = col[3];
+                            poss = col[4]?.toLowerCase().trim().replace(/["']/g, "");
+                            prezzo = col[5] || '-';
+                            cond = col[6];
+                            link = col[7]?.replace(/["']/g, "").trim();
+                        } else {
+                            // Struttura standard: raccolta(0), numero(1), titolo(2), posseduto(3), prezzo(4), condizione(5)
+                            num = col[1];
+                            tit = col[2];
+                            poss = col[3]?.toLowerCase().trim().replace(/["']/g, "");
+                            prezzo = col[4] || '-';
+                            cond = col[5];
+                        }
+
                         if (poss === "si" || poss === "sì" || poss === "x") {
                             const tr = document.createElement('tr');
                             tr.className = 'table-row';
-                            tr.innerHTML = `
-                                <td class="py-4 px-2 font-mono text-sky-500 text-sm">${col[1]}</td>
-                                <td class="py-4 px-2 serif-title text-white text-lg">${cleanText(col[2])}</td>
+                            
+                            let htmlContent = `
+                                <td class="py-4 px-2 font-mono text-sky-500 text-sm">${num}</td>
+                                <td class="py-4 px-2 serif-title text-white text-lg">${cleanText(tit)}</td>
                                 <td class="py-4 px-2"><span class="status-badge">Posseduto</span></td>
-                                <td class="py-4 px-2 text-slate-400 font-mono text-sm">${col[4] || '-'}</td>
-                                <td class="py-4 px-2 text-slate-400 italic text-sm">${cleanText(col[5])}</td>
+                                <td class="py-4 px-2 text-slate-400 font-mono text-sm">${prezzo}</td>
+                                <td class="py-4 px-2 text-slate-400 italic text-sm">${cleanText(cond)}</td>
                             `;
+
+                            // Aggiunge la cella del tasto Link solo per il Banco degli Unici
+                            if (serieId === "banco-unici") {
+                                const linkHtml = link ? `
+                                    <td class="py-4 px-2">
+                                        <a href="${link}" target="_blank" class="px-3 py-1 border border-sky-500/50 rounded text-[9px] font-bold text-sky-400 hover:bg-sky-500 hover:text-white transition-all uppercase tracking-tighter">
+                                            Info ↗
+                                        </a>
+                                    </td>` : `<td class="py-4 px-2 text-slate-600 text-[9px]">---</td>`;
+                                htmlContent += linkHtml;
+                            }
+
+                            tr.innerHTML = htmlContent;
                             tbody.appendChild(tr);
                         }
                     });
