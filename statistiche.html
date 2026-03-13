@@ -43,48 +43,76 @@
             "diab-sw": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=1343200500&single=true&output=csv",
             "diab-ann": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=807354185&single=true&output=csv",
             "brendon": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=818594743&single=true&output=csv",
-            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv"
+            "simpsons": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=798655827&single=true&output=csv",
+            "banco-unici": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ4Lmk8HsGARe1PrhPxbUcAY-YHN-_T8WuSKUQO89-PWO8kvQgB5jzN41khZhZTUJhdtIL-36ax-qIU/pub?gid=922417261&single=true&output=csv"
         };
 
         const nomiSerie = {
             "dyd": "Dylan Dog", "dyd-rist": "Dylan Dog Ristampa", "dyd-book": "Dylan Dog Book",
             "dyd-super": "Dylan Dog Super Book", "dyd-gig": "Dylan Dog Gigante",
             "diab": "Diabolik", "diab-sw": "Diabolik Swiisss (Seconda Ristampa)", "diab-ann": "Diabolik Annate",
-            "brendon": "Brendon", "simpsons": "Simpsons"
+            "brendon": "Brendon", "simpsons": "Simpsons", "banco-unici": "Il Banco degli Unici"
         };
 
-        const colori = ['#0ea5e9', '#2563eb', '#38bdf8', '#0284c7', '#7dd3fc', '#075985', '#3b82f6', '#1d4ed8', '#60a5fa', '#1e40af'];
+        const colori = ['#0ea5e9', '#2563eb', '#38bdf8', '#0284c7', '#7dd3fc', '#075985', '#3b82f6', '#1d4ed8', '#60a5fa', '#1e40af', '#06b6d4'];
 
         async function init() {
             let totale = 0; let dati = [];
             const ps = Object.entries(CSV_LINKS).map(async ([id, url]) => {
-                const r = await fetch(url); const t = await r.text();
-                const rows = t.split(/\r?\n/).slice(1);
-                let c = 0;
-                rows.forEach(row => {
-                    const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    const p = col[3]?.toLowerCase().trim().replace(/["']/g, "");
-                    if (p === "si" || p === "sì" || p === "x") c++;
-                });
-                totale += c; dati.push({ nome: nomiSerie[id], val: c });
+                try {
+                    const r = await fetch(url); const t = await r.text();
+                    const rows = t.split(/\r?\n/).slice(1);
+                    let c = 0;
+                    rows.forEach(row => {
+                        const col = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        
+                        // Gestione indice "Posseduto": se Banco Unici è la 5a colonna (indice 4), altrimenti è la 4a (indice 3)
+                        const indicePosseduto = (id === "banco-unici") ? 4 : 3;
+                        
+                        const p = col[indicePosseduto]?.toLowerCase().trim().replace(/["']/g, "");
+                        if (p === "si" || p === "sì" || p === "x") c++;
+                    });
+                    totale += c; 
+                    dati.push({ nome: nomiSerie[id] || id, val: c });
+                } catch (e) { console.error("Errore fetch stats:", id, e); }
             });
-            await Promise.all(ps); dati.sort((a,b) => b.val - a.val);
+            
+            await Promise.all(ps); 
+            dati.sort((a,b) => b.val - a.val);
             document.getElementById('total-counter').innerText = `Totale: ${totale} Albi`;
 
             new Chart(document.getElementById('pieChart'), {
-                type: 'doughnut', data: { labels: dati.map(d=>d.nome), datasets:[{data:dati.map(d=>d.val), backgroundColor:colori, borderColor:'#0b0f1a'}] },
+                type: 'doughnut', 
+                data: { 
+                    labels: dati.map(d=>d.nome), 
+                    datasets:[{data:dati.map(d=>d.val), backgroundColor:colori, borderColor:'#0b0f1a'}] 
+                },
                 options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}} }
             });
 
             new Chart(document.getElementById('radarChart'), {
-                type: 'radar', data: { labels: dati.map(d=>d.nome), datasets:[{label:'Volumi', data:dati.map(d=>d.val), backgroundColor:'rgba(56,189,248,0.2)', borderColor:'#38bdf8'}] },
-                options: { responsive:true, maintainAspectRatio:false, scales:{r:{grid:{color:'#1e293b'},pointLabels:{color:'#64748b'},ticks:{display:false}}}, plugins:{legend:{display:false}} }
+                type: 'radar', 
+                data: { 
+                    labels: dati.map(d=>d.nome), 
+                    datasets:[{label:'Volumi', data:dati.map(d=>d.val), backgroundColor:'rgba(56,189,248,0.2)', borderColor:'#38bdf8'}] 
+                },
+                options: { 
+                    responsive:true, 
+                    maintainAspectRatio:false, 
+                    scales:{r:{grid:{color:'#1e293b'},pointLabels:{color:'#64748b', font:{size:10}},ticks:{display:false}}}, 
+                    plugins:{legend:{display:false}} 
+                }
             });
 
             document.getElementById('stats-container').innerHTML = dati.map((s,i) => `
                 <div class="stat-card p-4">
-                    <div class="flex justify-between mb-2"><span class="serif-title text-white italic">${s.nome}</span><span class="text-xs text-slate-500">${s.val} VOL.</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${(s.val/totale*100).toFixed(1)}%; background:${colori[i%colori.length]}"></div></div>
+                    <div class="flex justify-between mb-2">
+                        <span class="serif-title text-white italic text-lg">${s.nome}</span>
+                        <span class="text-xs text-slate-500 font-bold tracking-tighter">${s.val} VOL.</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width:${totale > 0 ? (s.val/totale*100).toFixed(1) : 0}%; background:${colori[i%colori.length]}"></div>
+                    </div>
                 </div>`).join('');
         }
         init();
