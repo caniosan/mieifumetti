@@ -1,6 +1,6 @@
 # Safarà — proposta grafica «Fumetteria»
 
-Versione preparata il 7 ottobre 2026 a partire dal repository `caniosan/mieifumetti`, commit `36f8b43`.
+Versione aggiornata il 8 ottobre 2026 a partire dal repository `caniosan/mieifumetti`, commit `36f8b43`.
 
 Carta avorio, rosso, titoli da copertina, schede delle raccolte e illustrazione originale di Safarà. La grafica comprende la home, il registro e le statistiche. Sotto i 700 pixel il registro usa schede degli albi al posto della tabella.
 
@@ -14,6 +14,9 @@ Caricare **tutto il contenuto di questa cartella nella radice del repository esi
 - `stile.css` — aspetto e regole responsive.
 - `colori.js` — colori pastello casuali e indipendenti dei tre titoli, scelti prima di mostrare la pagina.
 - `app.js` — presentazione e caricamento in sola lettura.
+- `copertine-dati.js` — fonti e abbinamenti di 823 albi, con le regole per i nuovi numeri.
+- `copertine.js` — miniature esterne, ingrandimento e gestione degli errori.
+- `COPERTINE.md` — fonti, abbinamenti e 15 casi ancora segnalati dopo il riesame.
 - `dati.js` — gli stessi 11 URL CSV dei Fogli Google, gli stessi nomi e i link ai cataloghi originali.
 - `curiosita-dati.js` — personaggi, fonti e 14 curiosità di riserva verificate.
 - `curiosita.js` — recupero online e rotazione casuale delle curiosità.
@@ -28,6 +31,14 @@ Le schede della home mostrano i loghi di Dylan Dog, Diabolik, Brendon e Simpsons
 Aggiornamento grafico: «Safarà», «Ogni albo, una storia» e «La mia libreria» usano tre colori pastello diversi, scelti casualmente e separatamente a ogni caricamento. Il contorno delle lettere resta nero e sottile (0,65 px). La palette comprende otto tonalità di intensità media: blu polvere, salvia, malva, terracotta, verde acqua, rosa antico, pervinca e rame. Esclude bianco, beige, colori molto chiari e fluorescenti. La sessione memorizza l’ultimo colore di ciascun titolo per non ripeterlo al caricamento successivo; se il browser blocca l’archiviazione locale, la scelta resta casuale e i tre colori restano diversi fra loro. Le due scritte «Safarà» in testata e nel piè di pagina condividono il colore del marchio. «Sul mio scaffale» è sostituito da «La mia libreria»; durante la ricerca compare «Trovati nella mia libreria».
 
 I loghi delle serie mantengono i colori originali su un fondo chiaro. I file originali dei loghi sono inclusi in `assets/loghi/`, con le fonti nel relativo documento. Il bollino «Passione su carta» e il vecchio sottotitolo sono stati rimossi.
+
+## Copertine online
+
+Le miniature appaiono nel registro e nei risultati della ricerca. Un clic apre la copertina e il link alla fonte ComicsBox. Le immagini rimangono sui server esterni e vengono caricate progressivamente: non ci sono copertine da salvare o caricare su GitHub. Non serve modificare i Fogli Google.
+
+Sono associati 823 albi in 11 raccolte; 15 casi con titoli discordanti o identificazione incerta mostrano “Da verificare”. Tre delle 18 segnalazioni iniziali sono state risolte: Diabolik Swiisss 128 e I Racconti di Domani 1–2. L’elenco preciso, le fonti e i criteri sono in `COPERTINE.md`. Se un’immagine non è disponibile, il registro resta consultabile e il link alla fonte rimane presente.
+
+Per aggiornare la versione precedente bastano `index.html`, `raccolta.html`, `app.js`, `stile.css` e i due nuovi file `copertine-dati.js`, `copertine.js`. Caricare anche i due documenti aggiornati. `assets/`, i loghi e gli altri file sono invariati e possono rimanere su GitHub. In alternativa caricare tutto il contenuto della cartella estratta.
 
 ## Curiosità casuali
 

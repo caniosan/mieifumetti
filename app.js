@@ -61,12 +61,15 @@ async function loadSeries(id) {
     if (!response.ok) throw new Error('HTTP ' + response.status);
     const text = await response.text();
     if (/^\s*</.test(text)) throw new Error('Risposta non CSV');
-    const offset = id === 'banco-unici' ? 1 : 0;
+    const rows = parseCSV(text);
+    const headers = (rows.shift() || []).map(normalized);
+    const cell = (row, header) => clean(row[headers.indexOf(header)]);
     const serie = raccolte.find(s => s.id === id);
-    return parseCSV(text).slice(1).filter(c => owned(c[3 + offset])).map(c => ({
-      sId:id, sNome:serie.nome, num:clean(c[1 + offset]), tit:clean(c[2 + offset]) || 'Senza titolo',
-      prezzo:clean(c[4 + offset]) || '—', cond:clean(c[5 + offset]) || '—',
-      link: id === 'banco-unici' ? validUrl(clean(c[7])) : ''
+    if (!headers.includes('posseduto') || !headers.includes('numero')) throw new Error('Intestazioni CSV mancanti');
+    return rows.filter(c => owned(cell(c, 'posseduto'))).map(c => ({
+      sId:id, sNome:serie.nome, num:cell(c, 'numero'), tit:cell(c, 'titolo') || 'Senza titolo',
+      prezzo:cell(c, 'prezzo') || '—', cond:cell(c, 'condizione') || '—',
+      group:cell(c, 'raccolta'), img:cell(c, 'img'), link:validUrl(cell(c, 'link'))
     }));
   } finally { clearTimeout(timeout); }
 }
@@ -116,7 +119,7 @@ async function initHome() {
     const results = allData.filter(item => (filter === 'all' || coverData[item.sId][0] === filter) && (normalized(item.tit).includes(q) || normalized(item.num) === q));
     const shown = results.slice(0, 60);
     $('shelf-subtitle').textContent = `${numberFormat.format(results.length)} ${results.length === 1 ? 'albo trovato' : 'albi trovati'}${results.length > 60 ? ' · primi 60 risultati, affina la ricerca per gli altri' : ''}.`;
-    grid.innerHTML = shown.length ? shown.map(item => `<a class="collection-card result-card" href="raccolta.html?serie=${item.sId}&cerca=${encodeURIComponent(item.num)}"><span class="result-series">${esc(item.sNome)} · N° ${esc(item.num)}</span><h3>${esc(item.tit)}</h3><span class="result-bottom">Apri nel registro <span class="card-arrow" aria-hidden="true">↗</span></span></a>`).join('') : '<p class="message">Nessun albo trovato. Prova un altro titolo o numero.</p>';
+    grid.innerHTML = shown.length ? shown.map(item => `<article class="collection-card result-card"><span class="result-series">${esc(item.sNome)} · N° ${esc(item.num)}</span><div class="result-main">${window.SafaraCovers?.thumbnail(item) || ''}<h3>${esc(item.tit)}</h3></div><a class="result-bottom" href="raccolta.html?serie=${item.sId}&cerca=${encodeURIComponent(item.num)}${item.group ? '&gruppo=' + encodeURIComponent(item.group) : ''}">Apri nel registro <span class="card-arrow" aria-hidden="true">↗</span></a></article>`).join('') : '<p class="message">Nessun albo trovato. Prova un altro titolo o numero.</p>';
   }
   document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => {
     filter = button.dataset.filter;
@@ -138,15 +141,15 @@ async function initRegister() {
   const params = new URLSearchParams(location.search), id = params.get('serie');
   const serie = raccolte.find(s => s.id === id);
   const message = $('register-message'), tbody = $('table-body');
-  let items = [], query = params.get('cerca') || '', pending = true;
+  let items = [], query = params.get('cerca') || '', groupFilter = params.get('gruppo') || '', pending = true;
   function render() {
     if (pending) return;
-    const q = normalized(query), selected = items.filter(item => !q || normalized(item.tit).includes(q) || normalized(item.num) === q);
+    const q = normalized(query), selected = items.filter(item => (!groupFilter || item.group === groupFilter) && (!q || normalized(item.tit).includes(q) || normalized(item.num) === q));
     $('register-count').textContent = q ? `${selected.length} albi trovati su ${items.length}` : `${numberFormat.format(items.length)} albi posseduti`;
     $('register-table').hidden = !selected.length;
     message.hidden = !!selected.length;
     message.textContent = selected.length ? '' : q ? 'Nessun albo corrisponde alla ricerca.' : 'Nessun albo posseduto in questa raccolta.';
-    tbody.innerHTML = selected.map(item => `<tr class="table-row"><td class="issue-number">${esc(item.num || '—')}</td><td class="issue-title">${esc(item.tit)}</td><td class="issue-status"><span class="status-badge">Disponibile</span></td><td class="issue-price">${esc(item.prezzo)}</td><td class="issue-condition">${esc(item.cond)}</td>${id === 'banco-unici' ? `<td>${item.link ? `<a class="info-link" href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">Info albo ↗</a>` : '—'}</td>` : ''}</tr>`).join('');
+    tbody.innerHTML = selected.map(item => `<tr class="table-row"><td class="issue-cover">${window.SafaraCovers?.thumbnail(item) || '—'}</td><td class="issue-number">${esc(item.num || '—')}</td><td class="issue-title">${esc(item.tit)}</td><td class="issue-status"><span class="status-badge">Disponibile</span></td><td class="issue-price">${esc(item.prezzo)}</td><td class="issue-condition">${esc(item.cond)}</td>${id === 'banco-unici' ? `<td class="issue-info">${item.link ? `<a class="info-link" href="${esc(item.link)}" target="_blank" rel="noopener noreferrer">Info albo ↗</a>` : '—'}</td>` : ''}</tr>`).join('');
   }
   if (!serie) {
     $('serie-title').textContent = 'Raccolta non trovata';
@@ -156,9 +159,10 @@ async function initRegister() {
   }
   $('serie-title').textContent = serie.nome; document.title = `${serie.nome} | Safarà`;
   if (COMICS_ORG_LINKS[id]) $('external-link-container').innerHTML = `<a class="outline-button" href="${COMICS_ORG_LINKS[id]}" target="_blank" rel="noopener noreferrer">Catalogo generale <span aria-hidden="true">↗</span></a>`;
+  if (window.SafaraCovers) $('cover-catalogue-link').href = window.SafaraCovers.collectionSource(id);
   if (id === 'banco-unici') $('table-header-row').insertAdjacentHTML('beforeend', '<th scope="col">Link</th>');
   $('register-search').value = query; $('clear-search').hidden = !query;
-  setupSearch('register-search', value => {query = value; render();});
+  setupSearch('register-search', value => {query = value; groupFilter = ''; render();});
   try { items = await loadSeries(id); pending = false; render(); }
   catch {
     $('register-table').hidden = true; $('register-count').textContent = 'Dati non disponibili';

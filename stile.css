@@ -54,3 +54,54 @@ h1,h2,h3,p{margin:0}h1,h2,h3{font-family:Barlow,'Arial Narrow',Impact,sans-serif
 .comic-fact .fact-status{margin:2px 0 0;font-size:10px;color:var(--muted);line-height:1.4}
 .fact-status a{text-decoration:underline;text-underline-offset:2px}
 @media(max-width:700px){.comic-fact{margin-top:18px;max-width:100%}.comic-fact #fact-text{font-size:13px;min-height:0}.fact-actions button{min-height:44px}}
+
+/* Copertine esterne: spazio riservato anche durante il caricamento. */
+.issue-cover{width:112px;padding:12px 18px}
+.cover-thumb{position:relative;display:inline-flex;flex-direction:column;width:76px;flex:none;vertical-align:middle}
+.cover-button{padding:0;border:0;background:transparent;color:var(--ink);text-align:center}
+.cover-image-slot{position:relative;display:grid;place-items:center;width:100%;height:110px;background:#e8e2d5;border:1px solid var(--line);overflow:hidden}
+.remote-cover{position:relative;display:block;width:100%;height:100%;object-fit:contain}
+.cover-fallback{display:none;color:var(--muted);font-size:9px;line-height:1.4;padding:6px;text-align:center}
+.cover-unavailable .cover-fallback{display:block}
+.cover-thumb.cover-unavailable{min-height:110px;justify-content:center;border:1px solid var(--line);background:#e8e2d5}
+.cover-button:hover .cover-image-slot{border-color:var(--red);box-shadow:2px 2px 0 var(--line)}
+.cover-check{display:block;margin-top:4px;color:#80542c;font-size:8px;font-weight:600;line-height:1.3}
+.result-main{display:flex;align-items:flex-start;gap:14px;margin:15px 0 20px;min-width:0}
+.result-main h3{min-width:0;margin:0;font-size:24px;overflow-wrap:anywhere}
+.result-card{padding:16px}
+.result-bottom{min-height:36px}
+.result-bottom:hover{color:var(--red)}
+.cover-attribution{color:var(--muted);font-size:10px;margin-top:20px}
+.cover-attribution a,.table-note a{text-decoration:underline;text-underline-offset:3px}
+.cover-dialog{width:min(850px,calc(100% - 32px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);padding:0;border:2px solid var(--ink);background:var(--sheet);color:var(--ink);box-shadow:7px 7px 0 rgba(0,0,0,.3);overflow:auto}
+.cover-dialog::backdrop{background:rgba(20,20,18,.78)}
+.cover-dialog-inner{position:relative;padding:54px 28px 28px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center;gap:28px}
+.cover-close{position:absolute;top:8px;right:10px;width:40px;height:40px;padding:0;border:1px solid var(--ink);background:var(--paper);font-size:27px;line-height:1}
+.cover-dialog-art .cover-image-slot{height:480px;max-height:65vh;border:0;background:transparent}
+.cover-dialog-art .cover-fallback{font-size:13px}
+.cover-dialog-copy{min-width:0}
+.cover-dialog-copy .eyebrow{font-size:9px;line-height:1.5;overflow-wrap:anywhere}
+.cover-dialog-copy h2{font-size:35px;line-height:1.1;margin:14px 0;overflow-wrap:anywhere}
+.cover-edition{font-size:11px;color:var(--muted);margin-bottom:15px}
+.cover-note{font-size:12px;line-height:1.6;margin:15px 0}
+.cover-note-warning{padding-left:11px;border-left:2px solid #80542c}
+.cover-dialog-copy .outline-button{margin-top:10px;white-space:normal}
+.cover-dialog-open{overflow:hidden}
+@media(max-width:1000px) and (min-width:701px){td,th{padding-inline:12px}.issue-cover{width:100px;padding-inline:12px}.issue-title{min-width:180px}}
+@media(max-width:700px){
+  .table-row{grid-template-columns:76px minmax(0,1fr);gap:8px 16px}
+  .table-row .issue-cover{grid-column:1;grid-row:1/7;width:auto;align-self:start}
+  .table-row .issue-number,.table-row .issue-title,.table-row .issue-status,.table-row .issue-price,.table-row .issue-condition,.table-row .issue-info{grid-column:2}
+  .issue-number{line-height:1.5}
+  .issue-price::before,.issue-condition::before{display:inline;margin-right:6px}
+  .issue-title{overflow-wrap:anywhere}
+  .result-main{display:block;margin:12px 0}
+  .result-main .cover-thumb{width:100%;max-width:110px;margin-bottom:12px}
+  .result-main .cover-image-slot{height:150px}
+  .result-main h3{font-size:23px}
+  .result-card{padding:12px}
+  .cover-dialog-inner{grid-template-columns:1fr;gap:20px;padding:55px 20px 24px}
+  .cover-dialog-art .cover-image-slot{height:330px;max-height:48vh}
+  .cover-dialog-copy h2{font-size:29px}
+}
+@media print{.cover-dialog{display:none}.cover-thumb{break-inside:avoid}}

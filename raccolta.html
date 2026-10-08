@@ -13,6 +13,8 @@
   <script src="colori.js"></script>
   
   <script src="dati.js" defer></script>
+  <script src="copertine-dati.js" defer></script>
+  <script src="copertine.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body data-page="register">
@@ -28,8 +30,8 @@
     <header class="page-heading"><div><div class="eyebrow">Il registro della collezione</div><h1 id="serie-title">Caricamento…</h1><p>Gli albi posseduti, uno per uno.</p></div><div id="external-link-container"></div></header>
     <div class="register-toolbar"><div class="search-box"><svg class="icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><label for="register-search" class="sr-only">Cerca un titolo o un numero in questa raccolta…</label><input type="search" id="register-search" placeholder="Cerca un titolo o un numero in questa raccolta…" autocomplete="off"><button type="button" class="clear-search" id="clear-search" aria-label="Cancella la ricerca" hidden>×</button></div><p id="register-count" class="register-count" role="status">Caricamento degli albi…</p></div>
     <div id="register-message" class="message" role="status" hidden></div>
-    <div class="table-wrap" id="register-table"><table aria-label="Albi posseduti nella raccolta"><thead><tr id="table-header-row"><th scope="col">N°</th><th scope="col">Titolo albo</th><th scope="col">Stato</th><th scope="col">Prezzo</th><th scope="col">Condizione</th></tr></thead><tbody id="table-body"><tr class="loading-row"><td colspan="6">Caricamento degli albi…</td></tr></tbody></table></div>
-    <p class="table-note">Prezzi e condizioni riportati nel registro della collezione.</p>
+    <div class="table-wrap" id="register-table"><table aria-label="Albi posseduti nella raccolta"><thead><tr id="table-header-row"><th scope="col">Copertina</th><th scope="col">N°</th><th scope="col">Titolo albo</th><th scope="col">Stato</th><th scope="col">Prezzo</th><th scope="col">Condizione</th></tr></thead><tbody id="table-body"><tr class="loading-row"><td colspan="6">Caricamento degli albi…</td></tr></tbody></table></div>
+    <p class="table-note">Tocca una copertina per ingrandirla. Immagini da <a id="cover-catalogue-link" href="https://www.comicsbox.it" target="_blank" rel="noopener noreferrer">ComicsBox ↗</a>. Prezzi e condizioni riportati nel registro della collezione.</p>
 
   <noscript><p class="message">Attiva JavaScript per consultare gli albi e le statistiche della collezione.</p></noscript>
   </main>
